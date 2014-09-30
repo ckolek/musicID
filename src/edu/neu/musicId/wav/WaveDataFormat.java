@@ -22,10 +22,6 @@ public class WaveDataFormat {
         this.blockAlign = blockAlign;
         this.bitsPerSample = bitsPerSample;
     }
-    
-    public static String getChunkIdFmt() {
-        return CHUNK_ID__FMT;
-    }
 
     public int getAudioFormat() {
         return audioFormat;
@@ -85,8 +81,8 @@ public class WaveDataFormat {
         }
 
         string.append(")\n");
-        string.append("sampleRate: ").append(sampleRate).append("\n");
-        string.append("byteRate: ").append(byteRate).append("\n");
+        string.append("sampleRate: ").append(sampleRate).append(" Hz\n");
+        string.append("byteRate: ").append(byteRate).append(" bytes/s\n");
         string.append("blockAlign: ").append(blockAlign).append("\n");
         string.append("bitsPerSample: ").append(bitsPerSample);
         
