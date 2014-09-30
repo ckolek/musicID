@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import edu.neu.musicId.exception.InvalidFormatException;
 import edu.neu.musicId.util.Utilities;
 
 public class WaveDataReader implements Closeable {
@@ -16,7 +17,7 @@ public class WaveDataReader implements Closeable {
         this.inputStream = inputStream;
     }
 
-    public WaveData read() throws IOException {
+    public WaveData read() throws InvalidFormatException, IOException {
         byte[] chunkIdBuf = new byte[4];
 
         long length = inputStream.read(chunkIdBuf);
@@ -57,7 +58,7 @@ public class WaveDataReader implements Closeable {
         final String format = new String(formatBuf);
 
         if (!format.equals("WAVE")) {
-            throw new IOException("invalid format: " + format);
+            throw new InvalidFormatException("invalid format: " + format);
         }
 
         Collection<WaveData.Chunk> chunks = new ArrayList<WaveData.Chunk>();
