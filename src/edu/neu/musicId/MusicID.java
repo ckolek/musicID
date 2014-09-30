@@ -1,60 +1,54 @@
 
 package edu.neu.musicId;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import edu.neu.musicId.exception.InvalidFormatException;
 import edu.neu.musicId.wav.WaveData;
-import edu.neu.musicId.wav.WaveData.Chunk;
-import edu.neu.musicId.wav.WaveDataFormat;
 import edu.neu.musicId.wav.WaveDataReader;
 
 public class MusicID {
-    public static void main(String[] args) throws Exception {
-        WaveData wave = readWaveData(args[0]);
-        
-        WaveDataFormat format = WaveDataFormat.fromWaveData(wave);
-        
-        System.out.println(wave);
-        System.out.println(format);
-        
-        Chunk dataChunk = wave.getChunk("data");
-        
-        double seconds = format.getTime(dataChunk);
-        
-        System.out.printf("time: %.2f s\n", seconds);
-        
-        byte[] data = dataChunk.getData();
-        
-        int numChannels = format.getNumChannels();
-        int channelLength = data.length / numChannels;
-        
-        /*
-        byte[][] channels = new byte[numChannels][channelLength];
-        
-        for (int i = 0; i < channelLength; i++) {
-            for (int j = 0; j < numChannels; j++) {
-                channels[j][i] = data[(i * numChannels) + j];
-            }
+    private final File file1;
+    private final File file2;
+    
+    private MusicID(String filePath1, String filePath2) {
+        this.file1 = new File(filePath1);
+        this.file2 = new File(filePath2);
+    }
+    
+    public int run() {
+        WaveData wave1;
+        try {
+            wave1 = readWaveData(file1);
+        } catch (InvalidFormatException e) {
+            return error("ERROR: %s is not a supported format", file1.getName());
+        } catch (IOException e) {
+            return error(e.getMessage());
         }
-        */
         
-        byte[] combined = new byte[channelLength];
+        WaveData wave2;
+        try {
+            wave2 = readWaveData(file2);
+        } catch (InvalidFormatException e) {
+            return error("ERROR: %s is not a supported format", file2.getName());
+        } catch (IOException e) {
+            return error(e.getMessage());
+        }
         
-        for (int i = 0; i < channelLength; i++) {
-            short value = 0;
-            
-            for (int j = 0; j < numChannels; j++) {
-                value += data[(i * numChannels) + j];
-            }
-            
-            combined[i] = (byte) (value / numChannels);
+        WaveDataComparator comparator = new WaveDataComparator();
+        
+        if (comparator.areMatching(wave1, wave2)) {
+            return output("MATCH %s %s", file1.getName(), file2.getName());
+        } else {
+            return output("NO MATCH");
         }
     }
     
-    private static WaveData readWaveData(String fileName) throws IOException {
-        InputStream inputStream = new FileInputStream(fileName);
+    private static WaveData readWaveData(File file) throws IOException {
+        InputStream inputStream = new FileInputStream(file);
         
         WaveDataReader reader = null;
         
@@ -67,5 +61,28 @@ public class MusicID {
                 reader.close();
             }
         }
+    }
+    
+    private static int output(String format, Object... args) {
+        System.out.printf(format, args);
+        
+        return 0;
+    }
+    
+    private static int error(String format, Object... args) {
+        System.err.printf(format, args);
+        
+        return -1;
+    }
+    
+    public static void main(String[] args) throws Exception {
+        if (args.length != 2) {
+            error("incorrect command line");
+            
+            return;
+        }
+        
+        MusicID id = new MusicID(args[0], args[1]);
+        id.run();
     }
 }
