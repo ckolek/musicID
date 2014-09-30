@@ -51,6 +51,10 @@ public class WaveDataFormat {
         return bitsPerSample;
     }
     
+    public double getTime(Chunk chunk) {
+        return chunk.length() / (double) byteRate;
+    }
+    
     @Override
     public String toString() {
         StringBuilder string = new StringBuilder();

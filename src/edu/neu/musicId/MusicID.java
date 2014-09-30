@@ -21,6 +21,10 @@ public class MusicID {
         
         Chunk dataChunk = wave.getChunk("data");
         
+        double seconds = format.getTime(dataChunk);
+        
+        System.out.printf("time: %.2f s\n", seconds);
+        
         byte[] data = dataChunk.getData();
         
         int numChannels = format.getNumChannels();
