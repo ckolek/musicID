@@ -1,7 +1,7 @@
 
 package edu.neu.musicId.util;
 
-public class Utilities {
+public final class Utilities {
     private Utilities() {
 
     }
@@ -11,7 +11,7 @@ public class Utilities {
     }
 
     public static int toInt16(byte[] bytes, boolean isLittleEndian) {
-        return (int) toInt16(bytes, 0, isLittleEndian);
+        return toInt16(bytes, 0, isLittleEndian);
     }
 
     public static long toInt32(byte[] bytes, int startIndex, boolean isLittleEndian) {
@@ -27,8 +27,8 @@ public class Utilities {
 
         for (int i = 0; i < length; i++) {
             byte b = isLittleEndian ? bytes[startIndex + i] : bytes[startIndex + (length - 1 - i)];
-
-            value += (b << (8 * i));
+            
+            value += (0xFF & b) << (8 * i);
         }
 
         return value;
