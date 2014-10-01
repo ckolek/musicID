@@ -72,7 +72,7 @@ public class WaveDataFormat {
     /**
      * @return an <code>int</code> with a 16-bit unsigned integer value
      *         representing the number of bytes for one WAVE audio sample
-     *         including all channels (<code>numSamples</code> x
+     *         including all channels (<code>numChannels</code> x
      *         <code>bitsPerSample</code>/8)
      * @since 1.0
      */
@@ -87,6 +87,14 @@ public class WaveDataFormat {
      */
     public int getBitsPerSample() {
         return bitsPerSample;
+    }
+
+    /**
+     * @return the number of <code>byte</code>s per sample of WAVE audio
+     * @since 1.0
+     */
+    public int getBytesPerSample() {
+        return bitsPerSample / Byte.SIZE;
     }
 
     /**
@@ -157,12 +165,12 @@ public class WaveDataFormat {
             byte[] fmtData = fmtChunk.getData();
 
             return new WaveDataFormat(
-                    Utilities.toInt16(fmtData, 0, isLittleEndian),
-                    Utilities.toInt16(fmtData, 2, isLittleEndian),
-                    Utilities.toInt32(fmtData, 4, isLittleEndian),
-                    Utilities.toInt32(fmtData, 8, isLittleEndian),
-                    Utilities.toInt16(fmtData, 12, isLittleEndian),
-                    Utilities.toInt16(fmtData, 14, isLittleEndian));
+                    Utilities.toInt16(fmtData, 0, true, isLittleEndian),
+                    Utilities.toInt16(fmtData, 2, true, isLittleEndian),
+                    Utilities.toInt32(fmtData, 4, true, isLittleEndian),
+                    Utilities.toInt32(fmtData, 8, true, isLittleEndian),
+                    Utilities.toInt16(fmtData, 12, true, isLittleEndian),
+                    Utilities.toInt16(fmtData, 14, true, isLittleEndian));
         }
 
         return null;

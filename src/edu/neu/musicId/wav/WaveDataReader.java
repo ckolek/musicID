@@ -64,7 +64,7 @@ public class WaveDataReader implements Closeable {
             throw new IOException("could not read chunk size");
         }
 
-        final long chunkSize = Utilities.toInt32(chunkSizeBuf, isLittleEndian);
+        final long chunkSize = Utilities.toInt32(chunkSizeBuf, true, isLittleEndian);
 
         byte[] formatBuf = new byte[4];
 
@@ -116,7 +116,7 @@ public class WaveDataReader implements Closeable {
             throw new IOException("could not read sub-chunk size");
         }
 
-        final long chunkSize = Utilities.toInt32(chunkSizeBuf, isLittleEndian);
+        final long chunkSize = Utilities.toInt32(chunkSizeBuf, true, isLittleEndian);
 
         byte[] data = new byte[(int) chunkSize];
 
