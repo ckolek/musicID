@@ -80,4 +80,33 @@ public class Segmenter {
     private static float getSegmentInterval(WaveDataFormat format, Chunk chunk) {
         return 1F;
     }
+    
+    private static float[][] getSamples(WaveData wave, WaveDataFormat format, Chunk chunk) {
+        byte[][] channels = chunk.extractChannels(format);
+
+        final int bytesPerSample = format.getBytesPerSample();
+
+        float[][] samples = new float[channels.length][];
+
+        for (int i = 0; i < samples.length; i++) {
+            byte[] channel = channels[i];
+
+            final int numSamples = channel.length / bytesPerSample;
+
+            float[] channelSamples = new float[numSamples];
+
+            for (int j = 0; j < numSamples; j += bytesPerSample) {
+                float value = Utilities.toInt(channel, j * bytesPerSample, bytesPerSample,
+                        (bytesPerSample < 2), wave.isLittleEndian());
+
+                // TODO: divide value by maximum sample value
+
+                channelSamples[j] = value;
+            }
+
+            samples[i] = channelSamples;
+        }
+
+        return samples;
+    }
 }
