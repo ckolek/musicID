@@ -24,7 +24,7 @@ public class MusicID {
         try {
             wave1 = readWaveData(file1);
         } catch (InvalidFormatException e) {
-            return error("ERROR: %s is not a supported format", file1.getName());
+            return error("%s is not a supported format", file1.getName());
         } catch (IOException e) {
             return error(e.getMessage());
         }
@@ -33,7 +33,7 @@ public class MusicID {
         try {
             wave2 = readWaveData(file2);
         } catch (InvalidFormatException e) {
-            return error("ERROR: %s is not a supported format", file2.getName());
+            return error("%s is not a supported format", file2.getName());
         } catch (IOException e) {
             return error(e.getMessage());
         }
@@ -70,7 +70,7 @@ public class MusicID {
     }
     
     private static int error(String format, Object... args) {
-        System.err.printf(format, args);
+        System.err.printf("ERROR: " + format, args);
         
         return -1;
     }
