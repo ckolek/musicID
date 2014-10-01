@@ -10,6 +10,13 @@ import java.util.Collection;
 import edu.neu.musicId.exception.InvalidFormatException;
 import edu.neu.musicId.util.Utilities;
 
+/**
+ * This class wraps an {@link InputStream} to read a {@link WaveData} object
+ * from the stream.
+ * 
+ * @author ckolek
+ * @since 1.0
+ */
 public class WaveDataReader implements Closeable {
     private final InputStream inputStream;
 
@@ -17,6 +24,18 @@ public class WaveDataReader implements Closeable {
         this.inputStream = inputStream;
     }
 
+    /**
+     * Constructs a {@link WaveData} object from the data read from the
+     * {@link InputStream} contained by this {@code WaveDataReader}.
+     * 
+     * @return the extracted {@code WaveData} object
+     * @throws InvalidFormatException if the data in the stream is not in the
+     *             WAVE format
+     * @throws IOException if data cannot be read for any reason other than the
+     *             end of the input stream, if the input stream has been closed,
+     *             or if some other I/O error occurs
+     * @since 1.0
+     */
     public WaveData read() throws InvalidFormatException, IOException {
         byte[] chunkIdBuf = new byte[4];
 
@@ -62,7 +81,7 @@ public class WaveDataReader implements Closeable {
         }
 
         Collection<WaveData.Chunk> chunks = new ArrayList<WaveData.Chunk>();
-        
+
         while (length < chunkSize) {
             WaveData.Chunk chunk = readChunk(isLittleEndian);
 

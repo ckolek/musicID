@@ -2,6 +2,12 @@ package edu.neu.musicId.exception;
 
 import java.io.IOException;
 
+/**
+ * IOException subclass for invalid formats.
+ * 
+ * @author ckolek
+ * @since 1.0
+ */
 public class InvalidFormatException extends IOException {
     private static final long serialVersionUID = 1L;
 
