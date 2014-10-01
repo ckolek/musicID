@@ -122,7 +122,7 @@ public class WaveDataReader implements Closeable {
 
         length = inputStream.read(data);
 
-        if (length < chunkSize) {
+        if ((chunkSize > 0) && (length < chunkSize)) {
             throw new IOException("did not read " + chunkSize + " bytes of sub-chunk");
         }
 
