@@ -33,4 +33,12 @@ public final class Utilities {
 
         return value;
     }
+    
+    public static float toFloat(byte[] bytes, int startIndex, boolean isLittleEndian) {
+        return Float.intBitsToFloat((int) toInt(bytes, startIndex, 4, isLittleEndian));
+    }
+    
+    public static float toFloat(byte[] bytes, boolean isLittleEndian) {
+        return toFloat(bytes, 0, isLittleEndian);
+    }
 }
