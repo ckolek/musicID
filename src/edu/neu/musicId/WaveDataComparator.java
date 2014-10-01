@@ -6,6 +6,8 @@ import edu.neu.musicId.wav.WaveDataFormat;
 import edu.neu.musicId.wav.WaveData.Chunk;
 import edu.neu.musicId.Segmenter;
 
+import java.util.ArrayList;
+
 public class WaveDataComparator {
     public boolean areMatching(WaveData wave1, WaveData wave2) {
         WaveDataFormat waveDataFormat1 = WaveDataFormat.fromWaveData(wave1);
@@ -21,8 +23,8 @@ public class WaveDataComparator {
         // Segment both files TODO: Deniz's work here
         Segmenter segmenter = new Segmenter();
 
-        float[][] wave1segments = segmenter.segmentData(wave1);
-        float[][] wave2segments = segmenter.segmentData(wave2);
+        ArrayList<float[]> wave1segments = segmenter.segmentData(wave1);
+        ArrayList<float[]> wave2segments = segmenter.segmentData(wave2);
 
         // Do actual comparison TODO: Jeff's work here
 
