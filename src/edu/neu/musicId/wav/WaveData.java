@@ -144,5 +144,25 @@ public class WaveData {
         public byte[] getData() {
             return data;
         }
+        
+        public byte[][] extractChannels(WaveDataFormat format) {
+            final int numChannels = format.getNumChannels();
+            final int bytesPerSample = format.getBytesPerSample();
+            final int blockAlign = format.getBlockAlign();
+            final int channelSize = data.length / numChannels;
+            final int numSamples = channelSize / bytesPerSample;
+            
+            byte[][] channelData = new byte[numChannels][channelSize];
+            
+            for (int i = 0; i < numSamples; i++) {
+                for (int j = 0; j < numChannels; j++) {
+                    for (int k = 0; k < bytesPerSample; k++) {
+                        channelData[j][(i * bytesPerSample) + k] = data[(i * blockAlign) + (j * bytesPerSample) + k];
+                    }
+                }
+            }
+            
+            return channelData;
+        }
     }
 }
