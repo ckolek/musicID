@@ -10,7 +10,7 @@ import edu.neu.musicId.wav.WaveDataFormat;
  */
 public class Segmenter {
     public float[][] segmentData(WaveData wave){
-        WaveDataFormat waveDataFormat1 = WaveDataFormat.fromWaveData(wave);
+        WaveDataFormat waveDataFormat1 = wave.getWaveDataFormat();
 
         Chunk chunk = wave.getChunk("data");
 

@@ -8,8 +8,8 @@ import edu.neu.musicId.Segmenter;
 
 public class WaveDataComparator {
     public boolean areMatching(WaveData wave1, WaveData wave2) {
-        WaveDataFormat waveDataFormat1 = WaveDataFormat.fromWaveData(wave1);
-        WaveDataFormat waveDataFormat2 = WaveDataFormat.fromWaveData(wave2);
+        WaveDataFormat waveDataFormat1 = wave1.getWaveDataFormat();
+        WaveDataFormat waveDataFormat2 = wave2.getWaveDataFormat();
 
         Chunk chunk1 = wave1.getChunk("data");
         Chunk chunk2 = wave2.getChunk("data");

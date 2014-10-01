@@ -24,6 +24,8 @@ public class WaveData {
 
     private final Map<String, Chunk> chunks;
 
+    private WaveDataFormat waveDataFormat;
+
     public WaveData(String chunkId, boolean isLittleEndian, long chunkSize, String format,
             Collection<Chunk> chunks) {
         this.chunkId = chunkId;
@@ -79,6 +81,17 @@ public class WaveData {
      */
     public Chunk getChunk(String id) {
         return chunks.get(id);
+    }
+
+    /**
+     * @return the {@link WaveDataFormat} for this {@code WaveData}
+     */
+    public WaveDataFormat getWaveDataFormat() {
+        if (waveDataFormat == null) {
+            waveDataFormat = WaveDataFormat.fromWaveData(this);
+        }
+
+        return waveDataFormat;
     }
 
     @Override
