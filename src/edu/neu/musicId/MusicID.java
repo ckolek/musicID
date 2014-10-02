@@ -18,7 +18,7 @@ public class MusicID {
         this.file1 = new File(filePath1);
         this.file2 = new File(filePath2);
     }
-    
+
     public int run() {
         WaveData wave1;
         try {
@@ -39,7 +39,7 @@ public class MusicID {
         }
         
         WaveDataComparator comparator = new WaveDataComparator();
-        
+
         if (comparator.areMatching(wave1, wave2)) {
             return output("MATCH %s %s", file1.getName(), file2.getName());
         } else {
@@ -74,14 +74,14 @@ public class MusicID {
         
         return -1;
     }
-    
+
     public static void main(String[] args) throws Exception {
         if (args.length != 2) {
-            error("incorrect command line");
-            
+            error("Incorrect command line parameters");
+
             return;
         }
-        
+
         MusicID id = new MusicID(args[0], args[1]);
         id.run();
     }

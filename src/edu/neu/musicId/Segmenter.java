@@ -35,12 +35,18 @@ public class Segmenter {
         // Num Segments long x Num Samples per Segment wide
         double[][] segmentedData = new double[numSegments][segmentInterval_numSamples];
 
-        // Declare temporary array and counters used by foreach loop
-        double[] tempArray_doubles = new double[segmentInterval_numSamples];
+        // For every segment, declare a new array of doubles within
+        // segmentedData[]][].
+        for (int segmentIndex = 0; segmentIndex < numSegments; segmentIndex++){
+            segmentedData[segmentIndex] = new double[segmentInterval_numSamples];
 
-        // TODO: Re-write for loop here using new getSamples() -Deniz
-
-        System.out.println(segmentedData);
+            // For every sample in this segment, save it to the current
+            // array of doubles within segmentedData[][]
+            for (int sampleIndex = 0; sampleIndex < segmentInterval_numSamples; sampleIndex++){
+                segmentedData[segmentIndex][sampleIndex] = data[sampleIndex];
+                //System.out.println(data[sampleIndex]);
+            }
+        }
 
         return segmentedData;
     }
