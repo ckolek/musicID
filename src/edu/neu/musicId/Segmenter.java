@@ -29,7 +29,7 @@ public class Segmenter {
                 / waveDataFormat1.getBytesPerSample();
 
         // Compute the number of segments in this wave
-        int numSegments = (int) (segmentInterval_numSamples / waveDataFormat1.getTime(chunk));
+        int numSegments = (int)(data.length / segmentInterval_numSamples);
 
         // Initialize array of arrays with dimensions:
         // Num Segments long x Num Samples per Segment wide
@@ -38,31 +38,7 @@ public class Segmenter {
         // Declare temporary array and counters used by foreach loop
         double[] tempArray_doubles = new double[segmentInterval_numSamples];
 
-        int cnt = 0;
-        int arrayIndex = 0;
-        // For each sample in the data array, increment a counter cnt and add
-        // the sample to a temporary array. If the counter reaches the
-        // segmentInterval_numSamples value, add the temp array to the
-        // segmentedData array of arrays. Empty the temp array, reset the
-        // cnt counter, and increment the arrayIndex counter.
-        for (double _double : data[arrayIndex]) {
-            // If the counter has reached the segment interval
-            if (cnt > segmentInterval_numSamples) {
-                // Save the temp array of floats to segmentedData
-                segmentedData[arrayIndex] = tempArray_doubles;
-
-                arrayIndex++; // Increment the array index
-
-                // Empty the temp array
-                tempArray_doubles = new double[segmentInterval_numSamples];
-
-                cnt = 0; // Reset counter
-            }
-            // Otherwise fill temp array with samples in this segment
-            tempArray_doubles[cnt] = _double;
-            // Increment counter
-            cnt++;
-        }
+        // TODO: Re-write for loop here using new getSamples() -Deniz
 
         System.out.println(segmentedData);
 
