@@ -10,18 +10,18 @@ import edu.neu.musicId.wav.WaveData.Chunk;
 import edu.neu.musicId.wav.WaveDataFormat;
 
 public class Segmenter {
-    public float[][] segmentData(WaveData wave) {
+    public double[][] segmentData(WaveData wave) {
         WaveDataFormat waveDataFormat1 = wave.getWaveDataFormat();
 
         Chunk chunk = wave.getChunk("data");
 
-        float[] data = getSamples(wave, waveDataFormat1, chunk);
+        double[] data = getSamples(wave, waveDataFormat1, chunk);
 
         // Computes the size of a float in bytes (answer: 4)
         final int FLOAT_SIZE = Float.SIZE / Byte.SIZE;
 
         // Compute the segmentation interval (in seconds)
-        final float segmentInterval = getSegmentInterval(waveDataFormat1, chunk);
+        final double segmentInterval = getSegmentInterval(waveDataFormat1, chunk);
 
         // Compute the number of samples in each segment interval by:
         // segment length * byterate / (number of bytes per sample)
@@ -33,10 +33,10 @@ public class Segmenter {
 
         // Initialize array of arrays with dimensions:
         // Num Segments long x Num Samples per Segment wide
-        float[][] segmentedData = new float[numSegments][segmentInterval_numSamples];
+        double[][] segmentedData = new double[numSegments][segmentInterval_numSamples];
 
         // Declare temporary array and counters used by foreach loop
-        float[] tempArray_floats = new float[segmentInterval_numSamples];
+        double[] tempArray_doubles = new double[segmentInterval_numSamples];
 
         int cnt = 0;
         int arrayIndex = 0;
@@ -45,21 +45,21 @@ public class Segmenter {
         // segmentInterval_numSamples value, add the temp array to the
         // segmentedData array of arrays. Empty the temp array, reset the
         // cnt counter, and increment the arrayIndex counter.
-        for (float _float : data[arrayIndex]) {
+        for (double _double : data[arrayIndex]) {
             // If the counter has reached the segment interval
             if (cnt > segmentInterval_numSamples) {
                 // Save the temp array of floats to segmentedData
-                segmentedData[arrayIndex] = tempArray_floats;
+                segmentedData[arrayIndex] = tempArray_doubles;
 
                 arrayIndex++; // Increment the array index
 
                 // Empty the temp array
-                tempArray_floats = new float[segmentInterval_numSamples];
+                tempArray_doubles = new double[segmentInterval_numSamples];
 
                 cnt = 0; // Reset counter
             }
             // Otherwise fill temp array with samples in this segment
-            tempArray_floats[cnt] = _float;
+            tempArray_doubles[cnt] = _double;
             // Increment counter
             cnt++;
         }
@@ -69,28 +69,29 @@ public class Segmenter {
         return segmentedData;
     }
 
-    private static float getSegmentInterval(WaveDataFormat format, Chunk chunk) {
+    private static double getSegmentInterval(WaveDataFormat format, Chunk chunk) {
         return 1F;
     }
 
-    private static float[] getSamples(WaveData wave, WaveDataFormat format, Chunk chunk) {
+    public static double[] getSamples(WaveData wave, WaveDataFormat format, Chunk chunk) {
         byte[][] channels = chunk.extractChannels(format);
 
         final int bytesPerSample = format.getBytesPerSample();
         final int blockAlign = format.getBlockAlign();
         final int numSamples = chunk.length() / blockAlign;
+        final double divisor = Math.pow(2, 8 * bytesPerSample) - 1;
 
-        float[] samples = new float[numSamples];
+        double[] samples = new double[numSamples];
 
         for (int i = 0; i < samples.length; i++) {
-            float sample = 0;
+            long sample = 0;
 
             for (int j = 0; j < channels.length; j++) {
-                sample += Utilities.toInt(channels[j], (i * blockAlign) + (j * bytesPerSample),
-                        bytesPerSample, (bytesPerSample < 2), wave.isLittleEndian());
+                sample += Utilities.toInt(channels[j], (i * bytesPerSample), bytesPerSample,
+                        (bytesPerSample < 2), wave.isLittleEndian());
             }
-
-            samples[i] = sample / channels.length;
+            
+            samples[i] = (sample / (channels.length * divisor));
         }
 
         return samples;
