@@ -1,5 +1,7 @@
 __author__ = 'ckolek'
 
+from wave.waveDataFormat import WaveDataFormat
+
 
 class WaveData:
     def __init__(self, chunk_id, is_little_endian, chunk_size, format, chunks):
@@ -13,8 +15,17 @@ class WaveData:
         for chunk in chunks:
             self.chunks[chunk.id] = chunk
 
+        self._wave_data_format = None
+
     def chunk(self, chunk_id):
         return self.chunks[chunk_id]
+
+    def get_wave_data_format(self):
+        if self._wave_data_format is None:
+            self._wave_data_format = WaveDataFormat.from_wave_data(self)
+
+        return self._wave_data_format
+    wave_data_format = property(get_wave_data_format)
 
     class Chunk:
         def __init__(self, id, data):
@@ -23,20 +34,3 @@ class WaveData:
 
         def length(self):
             return len(self.data)
-
-        def extract_channels(self, format):
-            channel_size = self.length() / format.num_channels
-            num_samples = channel_size / format.bytes_per_sample
-
-            channel_data = []
-
-            for i in xrange(format.num_channels):
-                channel_data.append([])
-
-            for i in xrange(num_samples):
-                for j in xrange(format.num_channels):
-                    for k in xrange(format.bytes_per_sample):
-                        channel_data[j][(i * format.bytes_per_sample) + k] =\
-                            self.data[(i * format.block_align) + (j * format.bytes_per_sample) + k];
-
-            return channel_data
