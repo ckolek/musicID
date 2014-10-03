@@ -1,8 +1,5 @@
 import sys
-from numpy import fft
-import segmenter
 from wave.waveDataReader import WaveDataReader
-from wave.waveDataFormat import WaveDataFormat
 
 __author__ = 'ckolek'
 
