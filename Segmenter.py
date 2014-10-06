@@ -1,80 +1,52 @@
 __author__ = 'Deniz'
 
-import sys
-from wave.waveData import WaveData
-from wave.waveDataReader import WaveDataReader
-from wave.waveDataFormat import WaveDataFormat
 from util import utilities
 
-class Segmenter:
-    def segementData(wave):
-        waveDataFormat1 = wave.get_wave_data_format()
 
-        chunk = wave.chunk("data")
+def segment_data(wave):
+    format = wave.wave_data_format
 
-        data = getSamples(wave, waveDataFormat1, chunk)
+    chunk = wave.chunk("data")
 
-        # Compute the size of a float in bytes (answer: 4)
-        FLOAT_SIZE = 4
+    samples = get_samples(wave, format, chunk)
 
-        # Compute the segmentation interval (in seconds)
-        segmentInterval = getSegmentInterval(waveDataFormat1, chunk)
+    segment_interval = get_segment_interval(wave, format, chunk)
 
-        # Compute the number of samples in each invterval by:
-        # segment length * byterate / (number of bytes per sample)
-        segmentInterval_numSamples = \
-            (int)(segmentInterval * waveDataFormat1.getByteRate()) \
-                  / waveDataFormat1.getBytesPerSample()
+    samples_per_segment = int(segment_interval * format.byte_rate / format.bytes_per_sample)
 
-        # Compute the number of segments in this wave
-        numSegments = (int)(data.length / segmentInterval_numSamples)
+    num_segments = int(len(samples) / samples_per_segment)
 
-        # Init array of arrays with dimenions:
-        # Num Segments LONG x Num samples per Segment WIDE
-        segmentedData = [[float for i in range(numSegments)] for j in range(segmentInterval_numSamples)]
+    segments = []
 
-        # For every segment, declare a new array of doubles within
-        # segmentedData[]][]
-        for segmentIndex in xrange(numSegments):
-            segmentedData[segmentIndex] = float[segmentInterval_numSamples]
+    for i in xrange(num_segments):
+        start = i * samples_per_segment
+        end = start + samples_per_segment
 
-            # For every sample in this segment, save it to the current
-            # array of doubles within segmentedData[][]
-            for sampleIndex in xrange(segmentInterval_numSamples):
-                segmentedData[segmentIndex][sampleIndex] = data[sampleIndex]
-                #print data[sampleIndex]
+        segments.append(samples[start:end])
 
-        return segmentedData
+    return segments
 
-    def getSegmentInterval(self, format, chunk):
+
+def get_segment_interval(wave, format, chunk):
         return 1.0;
 
-    def getSamples(self, wave, format, chunk):
-        channels = chunk.extractChannels(format)
 
-        bytesPerSample = format.getBytesPerSample()
-        blockAlign = format.getBlockAlign()
-        numSamples = chunk.length() / blockAlign
-        divisor = Math.pow(2, 8 * bytesPerSample) - 1
+def get_samples(wave, format, chunk):
+    num_samples = chunk.length() / format.block_align
+    divisor = float(2 ** (8 * format.bytes_per_sample) - 1)
 
-        samples = float[numSamples]
+    samples = []
 
-        for i in xrange(samples.length):
-            sample = 0
+    for i in xrange(num_samples):
+        sample = 0
 
-            for j in xrange(channels.length):
-                sample += utilities.to_int(channels[j], (i * bytesPerSample),
-                  bytesPerSample, (bytesPerSample < 2))
-                # TODO: Does to_int not need the isLittleEndian arguement?
+        for j in xrange(format.num_channels):
+            sample += utilities.to_integer(chunk.data,
+                                           format.bytes_per_sample,
+                                           (i * format.block_align) + (j * format.bytes_per_sample),
+                                           (format.bytes_per_sample < 2),
+                                           wave.is_little_endian)
 
-            samples[i] = (sample / (channels.length * divisor))
+        samples.append(sample / (format.num_channels * divisor))
 
-        return samples
-
-
-
-
-
-
-
-
+    return samples
