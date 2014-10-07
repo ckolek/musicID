@@ -29,7 +29,7 @@ class WaveDataComparator:
         for x in wave1segments:
             for y in wave2segments:
                 # if the transforms of two segments match, return a match
-                if WaveDataComparator.compareTransform(fft(x), fft(y)):
+                if self.compareTransform(fft(x), fft(y)):
                     return True
 
         # If no segments matched throughout entire files, return False
