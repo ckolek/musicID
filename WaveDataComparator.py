@@ -5,7 +5,7 @@ from numpy import fft
 
 
 class WaveDataComparator:
-    def areMatching(self, wave1, wave2):
+    def areMatching(wave1, wave2):
         waveDataFormat1 = wave1.wave_data_format
         waveDataFormat2 = wave2.wave_data_format
 
@@ -37,3 +37,5 @@ class WaveDataComparator:
         # for now simply see if they are an exact match, will likely
         # need to be edited
         return dft1 == dft2
+
+    areMatching = staticmethod(areMatching)
