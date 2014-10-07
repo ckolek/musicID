@@ -1,6 +1,7 @@
 __author__ = 'Deniz'
 
 import Segmenter
+from numpy import fft
 
 
 class WaveDataComparator:
@@ -15,8 +16,22 @@ class WaveDataComparator:
         if waveDataFormat1.get_time(chunk1) != waveDataFormat2.get_time(chunk2):
             return False
 
-        wave1segments = Segmenter.segmentData(wave1)
-        wave2segments = Segmenter.segmentData(wave2)
+        wave1segments = Segmenter.segment_data(wave1)
+        wave2segments = Segmenter.segment_data(wave2)
 
-        # Do actual comparison of segments here
-        return True
+        # comparing each segment of wave1 to all in wave2,
+        for x in wave1segments:
+            for y in wave2segments:
+                # if the transforms of two segments match, return a match
+                if self.compareTransform(fft(x), fft(y)):
+                    return True
+
+        # If no segments matched throughout entire files, return False
+        return False
+
+    # Compares two discrete fourier transforms
+    def compareTransform(self, dft1, dft2):
+
+        # for now simply see if they are an exact match, will likely
+        # need to be edited
+        return dft1 == dft2
