@@ -20,8 +20,8 @@ class WaveDataComparator:
         if waveDataFormat1.get_time(chunk1) != waveDataFormat2.get_time(chunk2):
             return False
 
-        wave1segments = Segmenter.segment_data(wave1)
-        wave2segments = Segmenter.segment_data(wave2)
+        wave1segments = Segmenter.segment_data(self.wave1)
+        wave2segments = Segmenter.segment_data(self.wave2)
 
         # comparing each segment of wave1 to all in wave2
         # slower than going through each simultaneously, but will likely
