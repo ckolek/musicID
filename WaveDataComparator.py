@@ -19,7 +19,9 @@ class WaveDataComparator:
         wave1segments = Segmenter.segment_data(wave1)
         wave2segments = Segmenter.segment_data(wave2)
 
-        # comparing each segment of wave1 to all in wave2,
+        # comparing each segment of wave1 to all in wave2
+        # slower than going through each simultaneously, but will likely
+        # be needed for final version
         for x in wave1segments:
             for y in wave2segments:
                 # if the transforms of two segments match, return a match
