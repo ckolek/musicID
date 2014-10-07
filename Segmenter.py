@@ -29,7 +29,7 @@ def segment_data(wave):
 
 def get_segment_interval(wave, format, chunk):
         # The file length in seconds
-        fileLength = wave.wave_data_format.get_time()
+        fileLength = wave.wave_data_format.get_time(chunk)
 
         # The threshold for how small we want each segment to be (seconds)
         thresh = 1.0

@@ -1,16 +1,20 @@
 __author__ = 'Deniz'
 
 import Segmenter
-from numpy import fft
+from numpy.fft import fft
 
 
 class WaveDataComparator:
-    def areMatching(wave1, wave2):
-        waveDataFormat1 = wave1.wave_data_format
-        waveDataFormat2 = wave2.wave_data_format
+    def __init__(self, wave1, wave2):
+        self.wave1 = wave1
+        self.wave2 = wave2
 
-        chunk1 = wave1.chunk("data")
-        chunk2 = wave2.chunk("data")
+    def areMatching(self):
+        waveDataFormat1 = self.wave1.wave_data_format
+        waveDataFormat2 = self.wave2.wave_data_format
+
+        chunk1 = self.wave1.chunk("data")
+        chunk2 = self.wave2.chunk("data")
 
         # Check if files are same length in time
         if waveDataFormat1.get_time(chunk1) != waveDataFormat2.get_time(chunk2):
@@ -36,6 +40,6 @@ class WaveDataComparator:
 
         # for now simply see if they are an exact match, will likely
         # need to be edited
-        return dft1 == dft2
+        return list(dft1) == list(dft2)
 
-    areMatching = staticmethod(areMatching)
+

@@ -16,8 +16,8 @@ class MusicID:
         wave1 = read_wave_data(self.file_names[0])
         wave2 = read_wave_data(self.file_names[1])
 
-
-        if WaveDataComparator.areMatching(wave1, wave2):
+        comp = WaveDataComparator(wave1, wave2)
+        if comp.areMatching():
             print "MATCH " + self.file_names[0] + " " + self.file_names[1]
         else:
             print "NO MATCH"
