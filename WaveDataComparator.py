@@ -38,8 +38,21 @@ class WaveDataComparator:
     # Compares two discrete fourier transforms
     def compareTransform(self, dft1, dft2):
 
-        # for now simply see if they are an exact match, will likely
-        # need to be edited
-        return list(dft1) == list(dft2)
+        # new comparison checks to see that all constituent frequencies
+        # gotten from ffts of segments are no more than 1% different
+        l1 = list(dft1)
+        l2 = list(dft2)
+
+        # double check to make sure lists are of equal size
+        if len(l1) != len(l2):
+            print "ERROR: problem in computing similarities"
+            return False
+
+        val = True
+        # iterate through l1 and l2, check to see constituent frequencies are all very close
+        for i in range(len(l1)):
+            val = val and (.99 < (l1[i]/l2[i]) < 1.01)
+
+        return val
 
 
