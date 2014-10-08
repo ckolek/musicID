@@ -49,19 +49,19 @@ def main():
 		# Otherwise they are passing in a file location
 		elif o in ('-f'):
 			# If the file location is valid
-			if os.path.exists(arg):
+			if os.path.exists(a):
 				# If it is the first file, assign the argument to the file1 variable
 				if file1 is None:
 					file1 = a
 					# Debug stuff
 					print "File Exists"
-					print os.path.basename(arg)
+					print os.path.basename(a)
 				# Otherwise, assign the argument to the file2 variable
 				else:
 					file2 = a
 					# More debug
 					print "File Exists"
-					print os.path.basename(arg)
+					print os.path.basename(a)
 			#Otherwise, tell the user that the file at the location does not exist
 			else:
 				print "File location does not exist"
