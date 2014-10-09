@@ -34,19 +34,19 @@ def get_segment_interval(wave, format, chunk):
         # The threshold for how small we want each segment to be (seconds)
         thresh = 1.0
 
-        # The power of two we will start with (2 ^ powerOfTwo)
+        # The power of two we will start with (2 ** powerOfTwo)
         powerOfTwo = 4;
 
         # The segment interval to be computed/returned
         segmentInterval = 0.0;
 
         # Start with computing the segment interval based on 16 segments
-        segmentInterval = fileLength / (2 ^ powerOfTwo)
+        segmentInterval = fileLength / (2 ** powerOfTwo)
 
         # If the resulting segment is larger than our threshold, compute again
         #  with a bigger power of 2 until the segment interval is small enough
         while (segmentInterval < thresh):
-            segmentInterval = fileLength / (2 ^ powerOfTwo)
+            segmentInterval = fileLength / (2 ** powerOfTwo)
 
         return segmentInterval
 
