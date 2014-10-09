@@ -51,7 +51,7 @@ class WaveDataComparator:
         val = True
         # iterate through l1 and l2, check to see constituent frequencies are all very close
         for i in range(len(l1)):
-            val = val and (.99 < (l1[i]/l2[i]) < 1.01)
+            val = val and (.97 < (l1[i]/l2[i]) < 1.03)
 
         return val
 
