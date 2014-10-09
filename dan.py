@@ -31,9 +31,19 @@ def main():
 		# Get everything on the command line after the file name
 		# getopt returns the options and arguments as two separate arrays
 		opts, args = getopt.getopt(argv[1:], 'hf:', ['help'])
+		 
+		# If the user does not use the proper syntax, tell them they 
+		# have entered the wrong input and exit
+		if len(opts) < 2:	
+			print ("Incorrect input. Input two file paths with the -f option "
+					"front of each file")
+			usage()
+			sys.exit(2)
+		
 		# If no options are provided notify the user
 		if not opts:
-			print 'No tags provided. Please precede each file name with the -f tag'
+			print ('No tags provided. Please precede each file name with the '
+					'-f tag')
 			usage()
 	# If there is an error, print it out and exit
 	except getopt.GetoptError as err:
@@ -43,14 +53,17 @@ def main():
 	
 	# Loop through the resulting options and arguments
 	for o, a in opts:
-		# If the user asks for help, print out the usage function to tell them what to do
+		print o
+		# If the user asks for help, print out the usage function to tell them
+		# what to do
 		if o in ('-h', '--help'):
 			usage()
 		# Otherwise they are passing in a file location
 		elif o in ('-f'):
 			# If the file location is valid
 			if os.path.exists(a):
-				# If it is the first file, assign the argument to the file1 variable
+				# If it is the first file, assign the argument to the file1 
+				# variable
 				if file1 is None:
 					file1 = a
 					# Debug stuff
@@ -62,7 +75,8 @@ def main():
 					# More debug
 					print "File Exists"
 					print os.path.basename(a)
-			#Otherwise, tell the user that the file at the location does not exist
+			# Otherwise, tell the user that the file at the location does not 
+			# exist
 			else:
 				print "File location does not exist"
 				usage()
