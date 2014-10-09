@@ -10,6 +10,8 @@ class WaveDataReader:
         self.stream = stream
 
     def read(self):
+        print self.stream.tell()
+
         chunk_id_buf = self.stream.read(4)
 
         if chunk_id_buf is None or len(chunk_id_buf) < 4:
