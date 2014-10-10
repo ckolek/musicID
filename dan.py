@@ -18,13 +18,13 @@ class dan:
         try:
             wave1 = read_wave_data(file1)
         except InvalidFormatError:
-            print "ERROR: Invalid file format, file may be mislabelled."
+            print "ERROR: " + os.path.basename(file1) + " is not a supported format."
             sys.exit(2)
 
         try:
             wave2 = read_wave_data(file2)
         except InvalidFormatError:
-            print "ERROR: Invalid file format, file may be mislabelled."
+            print "ERROR: " + os.path.basename(file2) + " is not a supported format."
             sys.exit(2)
 
         comp = WaveDataComparator(wave1, wave2)

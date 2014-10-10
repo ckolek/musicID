@@ -9,11 +9,12 @@ Compilation & Run Instructions:
    located in the same directory at the dan.py program, or can be accessed
    when dan.py is given the full file path.
 2. Ensure your Python PATH variable is properly setup.
-3. Compile and run the dan.py program from a command line terminal with Python.
-   Some example usages:
-    >python dan.py -f z01.wav -f z02.wav
-    >python dan.py -f z01.wav -f /course/cs4500f14/Assignments/A4/z02.wav
-    >python dan.py -h
+3. Run the following command:
+    >chmod +x dan
+3. Run the dan program. Some example usages:
+    >./dan -f z01.wav -f z02.wav
+    >./dan -f z01.wav -f /course/cs4500f14/Assignments/A4/z02.wav
+    >./dan -h
 
 Recognitions:
 We hereby acknowledge that we are using numpy, which is installed on all
