@@ -3,7 +3,7 @@ __author__ = 'ckolek'
 import io
 from waveData import WaveData
 from util import utilities
-
+from util.exceptions import InvalidFormatError
 
 class WaveDataReader:
     def __init__(self, stream):
@@ -13,33 +13,36 @@ class WaveDataReader:
         chunk_id_buf = self.stream.read(4)
 
         if chunk_id_buf is None or len(chunk_id_buf) < 4:
-            raise IOError('could not read chunk ID')
+            raise InvalidFormatError('could not read chunk ID')
 
-        chunk_id = chunk_id_buf.encode("ASCII")
+        try:
+            chunk_id = chunk_id_buf.encode("ASCII")
+        except Exception as e:
+            raise InvalidFormatError(e.message)
 
         if chunk_id == 'RIFF':
             is_little_endian = True
         elif chunk_id == 'RIFX':
             is_little_endian = False
         else:
-            raise IOError('invalid chunk ID: ' + chunk_id)
+            raise InvalidFormatError('invalid chunk ID: ' + chunk_id)
 
         chunk_size_buf = self.stream.read(4)
 
         if chunk_size_buf is None or len(chunk_size_buf) < 4:
-            raise IOError('could not read chunk size')
+            raise InvalidFormatError('could not read chunk size')
 
         chunk_size = utilities.to_long(chunk_size_buf, is_unsigned=True, is_little_endian=is_little_endian)
 
         format_buf = self.stream.read(4)
 
         if format_buf is None or len(format_buf) < 4:
-            raise IOError('could not read format_buf')
+            raise InvalidFormatError('could not read format_buf')
 
         format = format_buf.encode("ASCII")
 
         if not format == 'WAVE':
-            raise IOError('invalid format: ' + format)
+            raise InvalidFormatError('invalid format: ' + format)
 
         length = 4
 
@@ -58,21 +61,24 @@ class WaveDataReader:
         chunk_id_buf = self.stream.read(4)
 
         if chunk_id_buf is None or len(chunk_id_buf) < 4:
-            raise IOError('could not read sub-chunk ID')
+            raise InvalidFormatError('could not read sub-chunk ID')
 
-        chunk_id = chunk_id_buf.encode("ASCII")
-
+        try:
+            chunk_id = chunk_id_buf.encode("ASCII")
+        except:
+            raise InvalidFormatError('non-ASCII chunk ID')
+        
         chunk_size_buf = self.stream.read(4)
 
         if chunk_size_buf is None or len(chunk_size_buf) < 4:
-            raise IOError('could not read sub-chunk size')
+            raise InvalidFormatError('could not read sub-chunk size')
 
         chunk_size = utilities.to_long(chunk_size_buf, is_unsigned=True, is_little_endian=is_little_endian)
 
         data = self.stream.read(chunk_size)
 
         if data is None or len(data) < chunk_size:
-            raise IOError('did not read ' + chunk_size + ' bytes of sub-chunk')
+            raise InvalidFormatError('did not read ' + chunk_size + ' bytes of sub-chunk')
 
         return WaveData.Chunk(chunk_id, data)
 
