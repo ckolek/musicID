@@ -2,7 +2,7 @@ __author__ = 'Deniz'
 
 from util import utilities
 
-
+# Segment the data in the given wav file
 def segment_data(wave):
     format = wave.wave_data_format
 
@@ -26,7 +26,7 @@ def segment_data(wave):
 
     return segments
 
-
+# Compute the segmentation interval
 def get_segment_interval(wave, format, chunk):
         # The file length in seconds
         fileLength = format.get_time(chunk)
@@ -52,7 +52,7 @@ def get_segment_interval(wave, format, chunk):
         return segmentInterval
 
 
-
+# Get the samples of the wav file to be segmented
 def get_samples(wave, format, chunk):
     num_samples = chunk.length() / format.block_align
     divisor = float(2 ** (8 * format.bytes_per_sample) - 1)
