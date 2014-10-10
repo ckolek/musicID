@@ -44,11 +44,7 @@ class WaveDataComparator:
         # new comparison checks to see that all constituent frequencies
         # gotten from ffts of segments are no more than 1% different
         l1 = list(dft1)
-        #l1.sort()
-        #l1.reverse()
         l2 = list(dft2)
-        #l2.sort()
-        #l2.reverse()
     
         #convert lists to their sorted power spectral densities
         #where only the top 20% most powerful frequencies are present

@@ -9,7 +9,7 @@ Compilation & Run Instructions:
    located in the same directory at the dan.py program, or can be accessed
    when dan.py is given the full file path.
 2. Ensure your Python PATH variable is properly setup.
-3. Run the following command:
+3. Run the following command to make the dan file executable:
     >chmod +x dan
 3. Run the dan program. Some example usages:
     >./dan -f z01.wav -f z02.wav
