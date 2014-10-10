@@ -7,16 +7,25 @@ from sys import argv
 from wave.waveData import WaveData
 from wave.waveDataReader import WaveDataReader
 from WaveDataComparator import WaveDataComparator
+from util.exceptions import InvalidFormatError
 
-""" Main class for comparing two wave files
-Usage provides basic description of the program\n
-Main handles input parsing
+"""
+Main class that runs all of the components of the dan audio matching program.
 """
 class dan:
     def run(self):
         checkInput(self)
-        wave1 = read_wave_data(file1)
-        wave2 = read_wave_data(file2)
+        try:
+            wave1 = read_wave_data(file1)
+        except InvalidFormatError:
+            print "ERROR: Invalid file format, file may be mislabelled."
+            sys.exit(2)
+
+        try:
+            wave2 = read_wave_data(file2)
+        except InvalidFormatError:
+            print "ERROR: Invalid file format, file may be mislabelled."
+            sys.exit(2)
 
         comp = WaveDataComparator(wave1, wave2)
         if comp.areMatching():
@@ -42,20 +51,17 @@ def checkInput(self):
         # If the user does not use the proper syntax, tell them they
         # have entered the wrong input and exit
         if len(opts) < 2:
-            print ("Incorrect input. Input two file paths with the -f option "
-                   "front of each file")
-            usage()
+            print ("ERROR: Incorrect input. Input two file paths with the -f option "
+                   "front of each file\n")
             sys.exit(2)
 
         # If no options are provided notify the user
         if not opts:
-            print ('No tags provided. Please precede each file name with the '
-                   '-f tag')
-            usage()
+            print ('ERROR: No tags provided. Please precede each file name with the '
+                   '-f tag\n')
     # If there is an error, print it out and exit
     except getopt.GetoptError as err:
         print str(err)
-        usage()
         sys.exit(2)
 
     # Loop through the resulting options and arguments
@@ -78,16 +84,14 @@ def checkInput(self):
             # Otherwise, tell the user that the file at the location does not
             # exist
             else:
-                print "File location does not exist"
-                usage()
+                print "ERROR: File location does not exist\n"
                 sys.exit(2)
         else:
-            usage()
             sys.exit(2)
 
         # Check if the files is .wav
         if not a[len(a)-4:len(a)] == ".wav":
-            print "ERROR: " + a + " is not a supported format"
+            print "ERROR: " + a + " is not a supported format\n"
             sys.exit(2)
 
 def usage():
