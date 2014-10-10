@@ -29,10 +29,10 @@ def segment_data(wave):
 
 def get_segment_interval(wave, format, chunk):
         # The file length in seconds
-        fileLength = wave.wave_data_format.get_time(chunk)
+        fileLength = format.get_time(chunk)
 
         # The threshold for how small we want each segment to be (seconds)
-        thresh = 1.0
+        thresh = 5.0
 
         # The power of two we will start with (2 ** powerOfTwo)
         powerOfTwo = 4;
@@ -45,7 +45,8 @@ def get_segment_interval(wave, format, chunk):
 
         # If the resulting segment is larger than our threshold, compute again
         #  with a bigger power of 2 until the segment interval is small enough
-        while (segmentInterval < thresh):
+        while (segmentInterval > thresh):
+            powerOfTwo += 1
             segmentInterval = fileLength / (2 ** powerOfTwo)
 
         return segmentInterval
@@ -67,7 +68,6 @@ def get_samples(wave, format, chunk):
                                            (i * format.block_align) + (j * format.bytes_per_sample),
                                            (format.bytes_per_sample < 2),
                                            wave.is_little_endian)
-
         samples.append(sample / (format.num_channels * divisor))
 
     return samples

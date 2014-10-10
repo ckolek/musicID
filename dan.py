@@ -1,4 +1,5 @@
-__author__ = 'jfeinberg'
+#!usr/bin/env python
+__author__ = 'jfeinberg_Deniz'
 
 import sys, getopt, os
 
