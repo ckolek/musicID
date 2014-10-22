@@ -8,6 +8,8 @@ from wave.waveData import WaveData
 from wave.waveDataReader import WaveDataReader
 from WaveDataComparator import WaveDataComparator
 from util.exceptions import InvalidFormatError
+from os import listdir
+from os.path import isfile, join
 
 """
 Main class that runs all of the components of the dan audio matching program.
@@ -79,7 +81,7 @@ def checkInput(self):
         # what to do
         if o in ('-h', '--help'):
             usage()
-        # Otherwise they are passing in a file location
+        # If the user passes in a file location
         elif o in ('-f'):
             # If the file location is valid
             if os.path.exists(a):
@@ -95,6 +97,22 @@ def checkInput(self):
             else:
                 print "ERROR: File location does not exist\n"
                 sys.exit(2)
+        # If the user passes in a directory
+        elif o in ('-d'):
+            # If the directory location is valid
+            if os.path.exists(a):
+                # If it is the first directory
+                if file1 is None:
+                    # Grab only the files in the first directory
+                    onlyfiles0 = [ f for f in listdir(a) if isfile(join(a,f)) ]
+                    #TODO: Assign file1 based on some directory 2 counter
+                    file1 = onlyfiles0[0]
+                # If it is the second directory
+                else:
+                    # Grab only the files in the second directory
+                    onlyfiles1 = [ f for f in listdir(a) if isfile(join(a,f)) ]
+                    #TODO: Assign file2 based on some fft complete counter
+                    file2 = onlyfiles1[0]
         else:
             sys.exit(2)
 
