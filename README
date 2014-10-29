@@ -17,5 +17,15 @@ Compilation & Run Instructions:
     >./dan -h
 
 Recognitions:
-We hereby acknowledge that we are using numpy, which is installed on all
-standard installations of the CCIS linux machines.
+We hereby acknowledge the use of numpy, scipy, and matplotlib, which are all
+installed on all standard installations of the CCIS linux machines.
+
+We also acknowledge that the following sources have influenced our system
+architecture and some algorithm design. These are NOT being used as 3rd party
+tools; merely guides and references:
+
+1. Dejavu library
+   github.com/worldveil/dejavu
+
+2. Duplicate songs detector via audio fingerprinting
+   codeproject.com/Articles/206507/Duplicates-detector-via-audio-fingerprinting
