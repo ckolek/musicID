@@ -196,22 +196,22 @@ def usage():
 # Return the wav data
 def read_wave_data(file_name):
     try:
-        dot_index = file_name.find('.')
+        dot_index = file_name.index('.')
     except ValueError as e:
         print "ERROR: " + file_name + " is not a supported format\n"
         sys.exit(2)
 
     extension = file_name[dot_index:]
-    file_output = subprocess.check_output(['file', file_name])
+    file_info = get_file_info(file_name)
 
     if extension == "wav":
-        if file_output.index('WAVE') < 0:
+        if file_info.find('WAVE') < 0:
             print "ERROR: " + file_name + " is not a supported format\n"
             sys.exit(2)
 
         istream = io.open(file_name, 'rb')
     elif extension == "mp3":
-        if file_output.index('MPEG') < 0 or file_output.index('layer III') < 0:
+        if file_info.find('MPEG') < 0 or file_info.index('layer III') < 0:
             print "ERROR: " + file_name + " is not a supported format\n"
             sys.exit(2)
 
@@ -226,6 +226,24 @@ def read_wave_data(file_name):
 
     with WaveDataReader(istream) as reader:
         return reader.read()
+
+def get_file_info(file_name):
+    file_info = subprocess.check_output(['file', file_name])
+
+    sym_link_index = file_info.find('symbolic link to `')
+
+    if sym_link_index >= 0:
+        parent_directory = os.path.join(file_name, os.pardir)
+
+        name_index = sym_link_index + 18
+        end_name_index = file_info.index("'", name_index)
+
+        name = file_info[name_index:end_name_index]
+        name = os.path.abspath(os.path.join(parent_directory, name))
+
+        return get_file_info(name)
+
+    return file_info
 
 # Call main run function
 if __name__ == "__main__":
