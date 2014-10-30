@@ -12,7 +12,8 @@ def segment_data(wave):
 
     segment_interval = get_segment_interval(wave, format, chunk)
 
-    samples_per_segment = int(segment_interval * format.byte_rate / format.bytes_per_sample)
+    samples_per_segment = int(segment_interval * format.byte_rate /
+                              format.bytes_per_sample)
 
     num_segments = int(len(samples) / samples_per_segment)
 
@@ -65,7 +66,8 @@ def get_samples(wave, format, chunk):
         for j in xrange(format.num_channels):
             sample += utilities.to_integer(chunk.data,
                                            format.bytes_per_sample,
-                                           (i * format.block_align) + (j * format.bytes_per_sample),
+                                           (i * format.block_align) +
+                                           (j * format.bytes_per_sample),
                                            (format.bytes_per_sample < 2),
                                            wave.is_little_endian)
         samples.append(sample / (format.num_channels * divisor))
