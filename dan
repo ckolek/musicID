@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 __author__ = 'jfeinberg_Deniz'
 
-import sys, getopt, os
+import sys, getopt, os, subprocess, io
 
 from sys import argv
 from wave.waveData import WaveData
@@ -125,10 +125,6 @@ def checkInput(self):
         else:
             sys.exit(2)
 
-        # Check if the files is .wav
-        if not a[len(a)-4:len(a)] == ".wav":
-            print "ERROR: " + a + " is not a supported format\n"
-            sys.exit(2)
 
 
 # Checks the file's header and will throw an
@@ -199,7 +195,36 @@ def usage():
 
 # Return the wav data
 def read_wave_data(file_name):
-    with WaveDataReader.open(file_name) as reader:
+    try:
+        dot_index = file_name.find('.')
+    except ValueError as e:
+        print "ERROR: " + file_name + " is not a supported format\n"
+        sys.exit(2)
+
+    extension = file_name[dot_index:]
+    file_output = subprocess.check_output(['file', file_name])
+
+    if extension == "wav":
+        if file_output.index('WAVE') < 0:
+            print "ERROR: " + file_name + " is not a supported format\n"
+            sys.exit(2)
+
+        istream = io.open(file_name, 'rb')
+    elif extension == "mp3":
+        if file_output.index('MPEG') < 0 or file_output.index('layer III') < 0:
+            print "ERROR: " + file_name + " is not a supported format\n"
+            sys.exit(2)
+
+        p = subprocess.Popen(['./course/cs4500f14/bin/lame',
+                              '--decode',
+                              file_name,
+                              '-'],
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
+
+        istream = p.stdout
+
+    with WaveDataReader(istream) as reader:
         return reader.read()
 
 # Call main run function
