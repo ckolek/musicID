@@ -201,7 +201,7 @@ def read_wave_data(file_name):
         print "ERROR: " + file_name + " is not a supported format\n"
         sys.exit(2)
 
-    extension = file_name[dot_index:]
+    extension = file_name[dot_index + 1:]
     file_info = get_file_info(file_name)
 
     if extension == "wav":
