@@ -58,6 +58,12 @@ class WaveDataFormat:
 
         return chunk.length() / float(self.byte_rate)
 
+    def __str__(self):
+        return "audioFormat: {}, numChannels: {}, sampleRate: {}, byteRate: {}, blockAlign: {}, bitsPerSample: {}".format(self.audio_format, self.num_channels, self.sample_rate, self.byte_rate, self.block_align, self.bits_per_sample)
+
+    def __repr__(self):
+        return self.__str__()
+
     def from_wave_data(wave):
         """
         :param wave: the WaveData object to extract a WaveDataFormat object from
