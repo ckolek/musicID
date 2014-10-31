@@ -19,7 +19,7 @@ class dan:
         self.setUp()
 
         # Check the arguments input from the command line
-        self.checkInput()
+        checkInput(self)
 
         if set1dir:
             dirComp()
