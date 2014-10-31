@@ -67,10 +67,6 @@ class WaveDataReader:
         while length < chunk_size:
             chunk = self.read_chunk(is_little_endian)
 
-            # FIXME: we are unsure of chunk size in MP3 -> WAVE files
-            if chunk is None:
-                break
-
             length += 8 + chunk.length()
 
             chunks.add(chunk)
@@ -89,14 +85,8 @@ class WaveDataReader:
 
         chunk_id_buf = self.stream.read(4)
 
-        if chunk_id_buf is None or len(chunk_id_buf) == 0:
-            return None
-        elif len(chunk_id_buf) < 4:
+        if chunk_id_buf is None or len(chunk_id_buf) < 4:
             raise InvalidFormatError('could not read sub-chunk ID')
-        
-        # FIXME: we are unsure of chunk size in MP3 -> WAVE files
-        #if chunk_id_buf is None or len(chunk_id_buf) < 4:
-        #    raise InvalidFormatError('could not read sub-chunk ID')
 
         try:
             chunk_id = chunk_id_buf.encode("ASCII")
@@ -114,10 +104,9 @@ class WaveDataReader:
 
         data = self.stream.read(chunk_size)
 
-        # FIXME: we are unsure of chunk size in MP3 -> WAVE files
-        #if data is None or len(data) < chunk_size:
-        #    raise InvalidFormatError('did not read ' + `chunk_size` +
-        #                             ' bytes of sub-chunk')
+        if data is None or len(data) < chunk_size:
+            raise InvalidFormatError('did not read ' + `chunk_size` +
+                                     ' bytes of sub-chunk')
 
         return WaveData.Chunk(chunk_id, data)
 
