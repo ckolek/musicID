@@ -16,15 +16,28 @@ Main class that runs all of the components of the dan audio matching program.
 """
 class dan:
     def run(self):
+        self.setUp()
+
         # Check the arguments input from the command line
         checkInput(self)
-
 
         if set1dir:
             dirComp()
         else:
             fileComp()
 
+        self.tearDown()
+
+    # set up temporary directory
+    def setUp(self):
+        if os.path.exists('/tmp/musicId'):
+            subprocess.check_call(['rm', '-r', '/tmp/musicId'])
+
+        os.mkdir('/tmp/musicId')
+
+    # clean up temporary directory
+    def tearDown(self):
+        subprocess.call(['rm', '-r', '/tmp/musicId'])
 
 # Check if the command line argument(s) are acceptable
 def checkInput(self):
@@ -208,26 +221,34 @@ def read_wave_data(file_name):
         if file_info.find('WAVE') < 0:
             print "ERROR: " + file_name + " is not a supported format\n"
             sys.exit(2)
-
-        istream = io.open(file_name, 'rb')
     elif extension == "mp3":
         if file_info.find('MPEG') < 0 or file_info.find('layer III') < 0:
             print "ERROR: " + file_name + " is not a supported format\n"
             sys.exit(2)
 
-        p = subprocess.Popen(['/course/cs4500f14/bin/lame',
-                              '--decode',
-                              file_name,
-                              '-'],
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
+        new_file_name = '/tmp/musicId/' + os.path.basename(file_name)
+        new_file_name = new_file_name[:-4] + '.wav'
+        
+        devnull = open('/dev/null', 'w')
 
-        istream = p.stdout
+        subprocess.check_call(['/course/cs4500f14/bin/lame',
+                               '--decode',
+                               file_name,
+                               new_file_name],
+                              stdout=devnull,
+                              stderr=devnull)
 
-    with WaveDataReader(istream) as reader:
+        file_name = new_file_name
+
+    with WaveDataReader.open(file_name) as reader:
         return reader.read()
 
 def get_file_info(file_name):
+    """
+    :return: the string returned when calling unix 'file' command on given file
+     name, recursively searching symbolic links if necessary
+    """
+
     file_info = subprocess.check_output(['file', file_name])
 
     sym_link_index = file_info.find('symbolic link to `')
