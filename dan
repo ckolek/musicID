@@ -21,10 +21,7 @@ class dan:
         # Check the arguments input from the command line
         checkInput(self)
 
-        if set1dir:
-            dirComp()
-        else:
-            fileComp()
+        dirComp()
 
         self.tearDown()
 
@@ -44,11 +41,6 @@ def checkInput(self):
     # Declare variables to hold the files that are passed in to global scope
     global set1
     global set2
-    # Used to determine if either of the files are directories. Initially set to false
-    global set1dir
-    global set2dir
-    set1dir = False
-    set2dir = False
     set1 = None
     set2 = None
 
@@ -91,10 +83,10 @@ def checkInput(self):
                     # assign it to set 1. Set1 check is there in case both files
                     # being compared are the same
                     if a == opts[0][1] and set1 is None:
-                        set1 = a
+                        set1 = [a]
                     # Otherwise, assign the argument to the set2 variable
                     else:
-                        set2 = a
+                        set2 = [a]
                 # Print out an error stating that a file was not correctly passed in
                 else:
                     print ('ERROR: Provided a directory as input when a file was'
@@ -146,7 +138,6 @@ def readFile(file1):
     # Try except to read the file data
     try:
         return read_wave_data(file1)
-        #TODO: need to put function for getting MP3 data here too
     except InvalidFormatError:
         print ("ERROR: " + os.path.basename(file1) + " is not a supported"
                " format\n")
@@ -154,32 +145,10 @@ def readFile(file1):
 
 # Basic comparison function. Call the waveDataComparator class to
 # determine equality and print the result
-def compare(file1, file2):
-    comp = WaveDataComparator(file1, file2)
-    if comp.areMatching():
-        print "MATCH " + file1 + " " + file2
-    else:
-        print "NO MATCH"
-
+def fileMatch(compareFile, file1, file2):
+    if compareFile:
+        print "MATCH " + os.path.basename(file1) + " " + os.path.basename(file2)
     return 0
-
-# Read format function. This is called when the first parameter is a file
-def fileComp():
-    # Get the data from the first file
-    wave1 = readFile(set1)
-    # If the second set is a directory, get the data for every file
-    # in the directory and compare it against the first file
-    if set2dir:
-        for f in set2:
-            wave2 = readFile(f)
-
-            compare(wave1, wave2)
-    # If not, both parameters are files. Get the data for the second file
-    # and compare
-    else:
-        wave2 = readFile(set2)
-        compare(wave1, wave2)
-
 
 # Read format function. This is called when the first parameter is a directory
 def dirComp():
@@ -190,15 +159,10 @@ def dirComp():
 
         # If the second set is also a directory, get the data from every file
         # and compare against the file at the current index in the first set
-        if set2dir:
-            for g in set2:
-                wave2 = readFile(g)
-                compare(wave1, wave2)
-        # If not, compare every file in the first set against the data from
-        # the second file
-        else:
-            wave2 = readFile(set2)
-            compare(wave1, wave2)
+        for g in set2:
+            wave2 = readFile(g)
+            comp = WaveDataComparator(wave1, wave2)
+            fileMatch(comp.areMatching(), f, g)
 
 
 # The usage information returned when -h parameter is given
