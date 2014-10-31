@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 __author__ = 'jfeinberg_Deniz'
 
-import sys, getopt, os
+import sys, getopt, os, subprocess, io
 
 from sys import argv
 from wave.waveData import WaveData
@@ -16,15 +16,28 @@ Main class that runs all of the components of the dan audio matching program.
 """
 class dan:
     def run(self):
+        self.setUp()
+
         # Check the arguments input from the command line
         checkInput(self)
-
 
         if set1dir:
             dirComp()
         else:
             fileComp()
 
+        self.tearDown()
+
+    # set up temporary directory
+    def setUp(self):
+        if os.path.exists('/tmp/musicId'):
+            subprocess.check_call(['rm', '-r', '/tmp/musicId'])
+
+        os.mkdir('/tmp/musicId')
+
+    # clean up temporary directory
+    def tearDown(self):
+        subprocess.call(['rm', '-r', '/tmp/musicId'])
 
 # Check if the command line argument(s) are acceptable
 def checkInput(self):
@@ -105,13 +118,13 @@ def checkInput(self):
                     if a == opts[0][1] and set1 is None:
                         set1dir = True
                         # Grab only the files in the first directory
-                        set1 = [ f for f in listdir(a) if isfile(join(a, f))]
+                        set1 = [ join(a, f) for f in listdir(a) if isfile(join(a, f))]
                     # Otherwise, assign the argument to the set2 variable and
                     # make the set2dir variable true
                     else:
                         # Grab only the files in the second directory
                         set2dir = True
-                        set2 = [ f for f in listdir(a) if isfile(join(a, f))]
+                        set2 = [ join(a, f) for f in listdir(a) if isfile(join(a, f))]
                 # Otherwise, print out an error stating a directory was not correctly
                 else:
                     print ('ERROR: Provided a file as input when a directory was'
@@ -125,10 +138,6 @@ def checkInput(self):
         else:
             sys.exit(2)
 
-        # Check if the files is .wav
-        if not a[len(a)-4:len(a)] == ".wav":
-            print "ERROR: " + a + " is not a supported format\n"
-            sys.exit(2)
 
 
 # Checks the file's header and will throw an
@@ -200,8 +209,63 @@ def usage():
 
 # Return the wav data
 def read_wave_data(file_name):
+    try:
+        dot_index = file_name.index('.')
+    except ValueError as e:
+        print "ERROR: " + file_name + " is not a supported format\n"
+        sys.exit(2)
+
+    extension = file_name[dot_index + 1:]
+    file_info = get_file_info(file_name)
+
+    if extension == "wav":
+        if file_info.find('WAVE') < 0:
+            print "ERROR: " + file_name + " is not a supported format\n"
+            sys.exit(2)
+    elif extension == "mp3":
+        if file_info.find('MPEG') < 0 or file_info.find('layer III') < 0:
+            print "ERROR: " + file_name + " is not a supported format\n"
+            sys.exit(2)
+
+        new_file_name = '/tmp/musicId/' + os.path.basename(file_name)
+        new_file_name = new_file_name[:-4] + '.wav'
+        
+        devnull = open('/dev/null', 'w')
+
+        subprocess.check_call(['/course/cs4500f14/bin/lame',
+                               '--decode',
+                               file_name,
+                               new_file_name],
+                              stdout=devnull,
+                              stderr=devnull)
+
+        file_name = new_file_name
+
     with WaveDataReader.open(file_name) as reader:
         return reader.read()
+
+def get_file_info(file_name):
+    """
+    :return: the string returned when calling unix 'file' command on given file
+     name, recursively searching symbolic links if necessary
+    """
+
+    file_info = subprocess.check_output(['file', file_name])
+
+    sym_link_index = file_info.find('symbolic link to `')
+
+    if sym_link_index >= 0:
+        parent_directory = os.path.join(file_name, os.pardir)
+
+        name_index = sym_link_index + 18
+        end_name_index = file_info.index("'", name_index)
+
+        name = file_info[name_index:end_name_index]
+        name = os.path.abspath(os.path.join(parent_directory, name))
+
+        return get_file_info(name)
+
+    return file_info
 
 # Call main run function
 if __name__ == "__main__":
