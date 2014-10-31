@@ -145,13 +145,11 @@ def readFile(file1):
 
 # Basic comparison function. Call the waveDataComparator class to
 # determine equality and print the result
-def compare(file1, file2):
-    comp = WaveDataComparator(file1, file2)
-    if comp.areMatching():
-        print "MATCH " + file1 + " " + file2
+def fileMatch(compareFile, file1, file2):
+    if compareFile:
+        print "MATCH " + os.path.basename(file1) + " " + os.path.basename(file2)
     else:
         print "NO MATCH"
-
     return 0
 
 # Read format function. This is called when the first parameter is a file
@@ -163,13 +161,14 @@ def fileComp():
     if set2dir:
         for f in set2:
             wave2 = readFile(f)
-
-            compare(wave1, wave2)
+            comp = WaveDataComparator(wave1, wave2)
+            fileMatch(comp, set1, f)
     # If not, both parameters are files. Get the data for the second file
     # and compare
     else:
         wave2 = readFile(set2)
-        compare(wave1, wave2)
+        comp = WaveDataComparator(wave1, wave2)
+        fileMatch(comp, set1, set2)
 
 
 # Read format function. This is called when the first parameter is a directory
@@ -184,12 +183,14 @@ def dirComp():
         if set2dir:
             for g in set2:
                 wave2 = readFile(g)
-                compare(wave1, wave2)
+                comp = WaveData(wave1, wave2)
+                fileMatch(comp, f, g)
         # If not, compare every file in the first set against the data from
         # the second file
         else:
             wave2 = readFile(set2)
-            compare(wave1, wave2)
+            comp = WaveDataComparator(wave1, wave2)
+            fileMatch(comp, f, set2)
 
 
 # The usage information returned when -h parameter is given
