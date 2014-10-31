@@ -105,13 +105,13 @@ def checkInput(self):
                     if a == opts[0][1] and set1 is None:
                         set1dir = True
                         # Grab only the files in the first directory
-                        set1 = [ f for f in listdir(a) if isfile(join(a, f))]
+                        set1 = [ join(a, f) for f in listdir(a) if isfile(join(a, f))]
                     # Otherwise, assign the argument to the set2 variable and
                     # make the set2dir variable true
                     else:
                         # Grab only the files in the second directory
                         set2dir = True
-                        set2 = [ f for f in listdir(a) if isfile(join(a, f))]
+                        set2 = [ join(a, f) for f in listdir(a) if isfile(join(a, f))]
                 # Otherwise, print out an error stating a directory was not correctly
                 else:
                     print ('ERROR: Provided a file as input when a directory was'
