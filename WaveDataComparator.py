@@ -38,22 +38,20 @@ class WaveDataComparator:
         # comparing each segment of wave1 to all in wave2
         # slower than going through each simultaneously, but will likely
         # be needed for final version
-        trace = 0
         for x in wave1list:
             x = self.makeFftList(x, float(waveDataFormat1.sample_rate))
             for y in wave2list:
                 y = self.makeFftList(y, float(waveDataFormat2.sample_rate))
                 # if the transforms of two segments match, return a match
-                if self.compareTransform(x, y, trace):
+                if self.compareTransform(x, y):
                     return True
-                trace += 1
 
 
         # If no segments matched throughout entire files, return False
         return False
 
     # Compares two discrete fourier transforms
-    def compareTransform(self, dft1, dft2, trace):
+    def compareTransform(self, dft1, dft2):
 
         # new comparison checks to see that all constituent frequencies
         # gotten from ffts of segments are no more than 1% different
@@ -65,10 +63,6 @@ class WaveDataComparator:
         spec_dens = lambda x: (abs(x[0])**2, x[1])
         l1 = sorted(map(spec_dens, l1), reverse=True)[0:7]
         l2 = sorted(map(spec_dens, l2), reverse=True)[0:7]
-
-        if trace == 0:
-            print l1
-            print l2
 
         val = True
         # iterate through l1 and l2, check to see strengths of frequencies
