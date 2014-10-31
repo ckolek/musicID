@@ -1,7 +1,7 @@
 __author__ = 'Mike_Deniz'
 
 import Segmenter
-from numpy.fft import fft
+from numpy.fft import fft, fftfreq
 import matplotlib.mlab as ml
 
 
@@ -18,35 +18,42 @@ class WaveDataComparator:
         chunk2 = self.wave2.chunk("data")
 
         # Check if files are same length in time
-        if waveDataFormat1.get_time(chunk1) != waveDataFormat2.get_time(chunk2):
+        t1 = waveDataFormat1.get_time(chunk1)
+        t2 = waveDataFormat2.get_time(chunk2)
+        if t1 != t2:
             return False
 
         wave1list = Segmenter.segment_data(self.wave1)
         wave2list = Segmenter.segment_data(self.wave2)
 
+        # MAY BE DELETED
         # convert list of wave file segments to lists of spectrograms
         # of corresponding segments
-        to_specgram = lambda x: ml.specgram(x, Fs=waveDataFormat1.sample_rate)
-        wave1list = map(to_specgram, wave1list)
-        wave2list = map(to_specgram, wave2list)
+        #to_specgram =
+        # lambda x: ml.specgram(x, Fs=waveDataFormat1.sample_rate)
+        #wave1list = map(to_specgram, wave1list)
+        #wave2list = map(to_specgram, wave2list)
 
-        '''
+
         # comparing each segment of wave1 to all in wave2
         # slower than going through each simultaneously, but will likely
         # be needed for final version
-        for x in wave1segments:
-            for y in wave2segments:
+        trace = 0
+        for x in wave1list:
+            x = self.makeFftList(x, float(waveDataFormat1.sample_rate))
+            for y in wave2list:
+                y = self.makeFftList(y, float(waveDataFormat2.sample_rate))
                 # if the transforms of two segments match, return a match
-                if self.compareTransform(fft(x), fft(y)):
+                if self.compareTransform(x, y, trace):
                     return True
                 trace += 1
-        '''
+
 
         # If no segments matched throughout entire files, return False
         return False
 
     # Compares two discrete fourier transforms
-    def compareTransform(self, dft1, dft2):
+    def compareTransform(self, dft1, dft2, trace):
 
         # new comparison checks to see that all constituent frequencies
         # gotten from ffts of segments are no more than 1% different
@@ -55,20 +62,51 @@ class WaveDataComparator:
     
         #convert lists to their sorted power spectral densities
         #where only the top 20% most powerful frequencies are present
-        l1 = sorted(map(lambda x: abs(x)**2, l1), reverse=True)[0:int(len(l1)/5)]
-        l2 = sorted(map(lambda x: abs(x)**2, l2), reverse=True)[0:int(len(l2)/5)]
+        spec_dens = lambda x: (abs(x[0])**2, x[1])
+        l1 = sorted(map(spec_dens, l1), reverse=True)[0:7]
+        l2 = sorted(map(spec_dens, l2), reverse=True)[0:7]
 
-
-        # double check to make sure lists are of equal size
-        if len(l1) != len(l2):
-            print "ERROR: problem in computing similarities"
-            return False
+        if trace == 0:
+            print l1
+            print l2
 
         val = True
-        # iterate through l1 and l2, check to see constituent frequencies are all very close
+        # iterate through l1 and l2, check to see strengths of frequencies
+        # are very close and frequencies themselves are all very close
         for i in range(len(l1)):
-            val = val and (.9 < (l1[i]/l2[i]) < 1.1)
+            val = val and (.9 < (l1[i][0]/l2[i][0]) < 1.1)
+            val = val and abs(l1[i][1]-l2[i][1]) < 5
 
         return val
+
+    # computes an 'fft list' for a segment of samples. This is a list of
+    # pairs (strength of frequency, frequency)
+    # l is a list of samples, n is the sampling rate
+    def makeFftList(self, l, n):
+
+        l = list(fft(l))
+
+        return zip(l, fftfreq(len(l), 1/n))[0:len(l)/2]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
