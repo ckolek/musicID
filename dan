@@ -215,7 +215,7 @@ def read_wave_data(file_name):
             print "ERROR: " + file_name + " is not a supported format\n"
             sys.exit(2)
 
-        p = subprocess.Popen(['./course/cs4500f14/bin/lame',
+        p = subprocess.Popen(['/course/cs4500f14/bin/lame',
                               '--decode',
                               file_name,
                               '-'],
