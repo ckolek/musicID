@@ -19,45 +19,32 @@ class dan:
         # Check the arguments input from the command line
         checkInput(self)
 
-        # If the input check is OK, read the wave data.
-        # The WaveDataReader checks the file's header and will throw an
-        # error if the file was labelled .wav but not actually a wav file.
-        try:
-            wave1 = read_wave_data(file1)
-        except InvalidFormatError:
-            print ("ERROR: " + os.path.basename(file1) + " is not a supported"
-                   " format\n")
-            sys.exit(2)
 
-        try:
-            wave2 = read_wave_data(file2)
-        except InvalidFormatError:
-            print ("ERROR: " + os.path.basename(file2) + " is not a supported"
-                   " format\n")
-            sys.exit(2)
-
-        # Once the files are read, compare them
-        comp = WaveDataComparator(wave1, wave2)
-        if comp.areMatching():
-            print "MATCH " + file1 + " " + file2
+        if set1dir:
+            dirComp()
         else:
-            print "NO MATCH"
+            fileComp()
 
-        return 0
 
 # Check if the command line argument(s) are acceptable
 def checkInput(self):
     # Declare variables to hold the files that are passed in to global scope
-    global file1
-    global file2
-    file1 = None
-    file2 = None
+    global set1
+    global set2
+    # Used to determine if either of the files are directories. Initially set to false
+    global set1dir
+    global set2dir
+    set1dir = False
+    set2dir = False
+    set1 = None
+    set2 = None
+
 
     # Parse command line input
     try:
         # Get everything on the command line after the file name
         # getopt returns the options and arguments as two separate arrays
-        opts, args = getopt.getopt(argv[1:], 'hf:', ['help'])
+        opts, args = getopt.getopt(argv[1:], 'hf:d:', ['help'])
 
         # If the user does not use the proper syntax, tell them they
         # have entered the wrong input and exit
@@ -82,37 +69,59 @@ def checkInput(self):
         if o in ('-h', '--help'):
             usage()
         # If the user passes in a file location
-        elif o in ('-f'):
+        elif o in '-f':
             # If the file location is valid
             if os.path.exists(a):
-                # If it is the first file, assign the argument to the file1
-                # variable
-                if file1 is None:
-                    file1 = a
-                # Otherwise, assign the argument to the file2 variable
+                # Error checking to ensure that the file location actually is a file
+                if os.path.isfile(a):
+                    # If the file is equal to the first file passed in
+                    # assign it to set 1. Set1 check is there in case both files
+                    # being compared are the same
+                    if a == opts[0][1] and set1 is None:
+                        set1 = a
+                    # Otherwise, assign the argument to the set2 variable
+                    else:
+                        set2 = a
+                # Print out an error stating that a file was not correctly passed in
                 else:
-                    file2 = a
+                    print ('ERROR: Provided a directory as input when a file was'
+                            ' expected ' + a)
+                    sys.exit(2)
             # Otherwise, tell the user that the file at the location does not
             # exist
             else:
                 print "ERROR: File location does not exist\n"
                 sys.exit(2)
         # If the user passes in a directory
-        elif o in ('-d'):
+        elif o in '-d':
             # If the directory location is valid
             if os.path.exists(a):
-                # If it is the first directory
-                if file1 is None:
-                    # Grab only the files in the first directory
-                    onlyfiles0 = [ f for f in listdir(a) if isfile(join(a,f)) ]
-                    #TODO: Assign file1 based on some directory 2 counter
-                    file1 = onlyfiles0[0]
-                # If it is the second directory
+                # Error checking to ensure that the directory location actually has
+                # a directory
+                if os.path.isdir(a):
+                    # If the directory is the first directory passed in, assign the
+                    # argument to set1 and make the set1dir variable true. set1 is None
+                    # is there in case two files being compared are the same
+                    if a == opts[0][1] and set1 is None:
+                        set1dir = True
+                        # Grab only the files in the first directory
+                        set1 = [ f for f in listdir(a) if isfile(join(a, f))]
+                    # Otherwise, assign the argument to the set2 variable and
+                    # make the set2dir variable true
+                    else:
+                        # Grab only the files in the second directory
+                        set2dir = True
+                        set2 = [ f for f in listdir(a) if isfile(join(a, f))]
+                # Otherwise, print out an error stating a directory was not correctly
                 else:
-                    # Grab only the files in the second directory
-                    onlyfiles1 = [ f for f in listdir(a) if isfile(join(a,f)) ]
-                    #TODO: Assign file2 based on some fft complete counter
-                    file2 = onlyfiles1[0]
+                    print ('ERROR: Provided a file as input when a directory was'
+                            ' expected ' + a)
+                    sys.exit(2)
+            else:
+                # Otherwise, tell the user that the directory at the location does not
+                # exist
+                print "ERROR: Directory location does not exist\n"
+                sys.exit(2)
         else:
             sys.exit(2)
 
@@ -121,12 +130,74 @@ def checkInput(self):
             print "ERROR: " + a + " is not a supported format\n"
             sys.exit(2)
 
+
+# Checks the file's header and will throw an
+# error if the file was labelled .wav but not actually a wav file.
+def readFile(file1):
+    # Try except to read the file data
+    try:
+        return read_wave_data(file1)
+        #TODO: need to put function for getting MP3 data here too
+    except InvalidFormatError:
+        print ("ERROR: " + os.path.basename(file1) + " is not a supported"
+               " format\n")
+        sys.exit(2)
+
+# Basic comparison function. Call the waveDataComparator class to
+# determine equality and print the result
+def compare(file1, file2):
+    comp = WaveDataComparator(file1, file2)
+    if comp.areMatching():
+        print "MATCH " + file1 + " " + file2
+    else:
+        print "NO MATCH"
+
+    return 0
+
+# Read format function. This is called when the first parameter is a file
+def fileComp():
+    # Get the data from the first file
+    wave1 = readFile(set1)
+    # If the second set is a directory, get the data for every file
+    # in the directory and compare it against the first file
+    if set2dir:
+        for f in set2:
+            wave2 = readFile(f)
+
+            compare(wave1, wave2)
+    # If not, both parameters are files. Get the data for the second file
+    # and compare
+    else:
+        wave2 = readFile(set2)
+        compare(wave1, wave2)
+
+
+# Read format function. This is called when the first parameter is a directory
+def dirComp():
+    # For every file in the first directory, get the data and compare against
+    # the second parameter
+    for f in set1:
+        wave1 = readFile(f)
+
+        # If the second set is also a directory, get the data from every file
+        # and compare against the file at the current index in the first set
+        if set2dir:
+            for g in set2:
+                wave2 = readFile(g)
+                compare(wave1, wave2)
+        # If not, compare every file in the first set against the data from
+        # the second file
+        else:
+            wave2 = readFile(set2)
+            compare(wave1, wave2)
+
+
 # The usage information returned when -h parameter is given
 def usage():
     print "\nThis is the CLI for the dan audio matcher program\n"
-    print 'Usage: ' + argv[0] + ' -f <file1> -f <file2>'
+    print 'Usage: ' + argv[0] + ' -f <set1> -f <set2>'
 
-# Return the wav dat
+# Return the wav data
 def read_wave_data(file_name):
     with WaveDataReader.open(file_name) as reader:
         return reader.read()
