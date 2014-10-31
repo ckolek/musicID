@@ -211,7 +211,7 @@ def read_wave_data(file_name):
 
         istream = io.open(file_name, 'rb')
     elif extension == "mp3":
-        if file_info.find('MPEG') < 0 or file_info.index('layer III') < 0:
+        if file_info.find('MPEG') < 0 or file_info.find('layer III') < 0:
             print "ERROR: " + file_name + " is not a supported format\n"
             sys.exit(2)
 
