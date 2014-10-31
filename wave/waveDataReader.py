@@ -105,7 +105,7 @@ class WaveDataReader:
         data = self.stream.read(chunk_size)
 
         if data is None or len(data) < chunk_size:
-            raise InvalidFormatError('did not read ' + chunk_size +
+            raise InvalidFormatError('did not read ' + `chunk_size` +
                                      ' bytes of sub-chunk')
 
         return WaveData.Chunk(chunk_id, data)
