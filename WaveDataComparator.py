@@ -96,17 +96,16 @@ class WaveDataComparator:
         # slower than going through each simultaneously, but will likely
         # be needed for final version
         for x in wave1list:
-            x = self.makeFftList(x, float(waveDataFormat1.sample_rate))
+            #x = self.makeFftList(x, float(waveDataFormat1.sample_rate))
             x = self.fingerprint(x, DEFAULT_FS, DEFAULT_WINDOW_SIZE,
                                  DEFAULT_OVERLAP_RATIO, DEFAULT_FAN_VALUE,
                                  DEFAULT_AMP_MIN)
             #print x
             for y in wave2list:
-                y = self.makeFftList(y, float(waveDataFormat2.sample_rate))
+                #y = self.makeFftList(y, float(waveDataFormat2.sample_rate))
                 y = self.fingerprint(y, DEFAULT_FS, DEFAULT_WINDOW_SIZE,
                                      DEFAULT_OVERLAP_RATIO, DEFAULT_FAN_VALUE,
                                      DEFAULT_AMP_MIN)
-                #print y
                 # if the transforms of two segments match, return a match
                 if self.compareTransform(x, y):
                     return True
@@ -165,18 +164,24 @@ class WaveDataComparator:
 
         # apply log transform since specgram() returns linear array
         spectrogram = 10 * np.log10(spectrogram)
+        #print "POST LOG SPECTROGRAM:\n" + str(spectrogram)
         spectrogram[spectrogram == -np.inf] = 0  # replace infs with zeros
+        #print "POST INF REPLACEMENT SPECTROGRAM:\n" + str(spectrogram)
 
         # find local maxima
         local_maxima  = self.get_peaks(spectrogram, plot=False, amp_min=amp_min)
 
+        #print "LOCAL MAXIMA\n" + str(local_maxima)
+
         # return hashes
-        return self.generate_hashes(local_maxima, fan_value=fan_value)
+        return self.generate_hashes(local_maxima)
 
     def get_peaks(self, spectrogram, plot=False, amp_min=DEFAULT_AMP_MIN):
 
         struct = generate_binary_structure(2, 1)
         neighborhood = iterate_structure(struct, PEAK_NEIGHBORHOOD_SIZE)
+
+        #print "Spectrogram:\n " + str(spectrogram) + "\n Neighborhood:\n" + str(neighborhood)
 
         # find local maxima using our fliter shape
         local_max = maximum_filter(spectrogram, footprint=neighborhood) == spectrogram
@@ -189,12 +194,20 @@ class WaveDataComparator:
 
         # extract peaks
         amps = spectrogram[detected_peaks]
+        #print "PRE-FLATTEN AMPS:\n" + str(amps)
         j, i = np.where(detected_peaks)
 
         # filter peaks
         amps = amps.flatten()
+        #print "POST-FLATTEN AMPS:\n" + str(amps)
         peaks = zip(i, j, amps)
+        #print "PEAKS:\n" + str(peaks)
+
+        #FIXME: PEAK FILTERING returns empty list because all of the amplitudes
+        #FIXME: are negative numbers for some reason.
         peaks_filtered = [x for x in peaks if x[2] > amp_min]  # freq, time, amp
+
+        #print "PEAKS FILTERED:\n" + str(peaks_filtered)
 
         # get indices for frequency and time
         frequency_idx = [x[1] for x in peaks_filtered]
@@ -222,6 +235,7 @@ class WaveDataComparator:
         fingerprinted = set()  # to avoid rehashing same pairs
 
         if PEAK_SORT:
+
             peaks.sort(key=itemgetter(1))
 
         for i in range(len(peaks)):
