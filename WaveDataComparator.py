@@ -169,17 +169,19 @@ class WaveDataComparator:
         #print "POST INF REPLACEMENT SPECTROGRAM:\n" + str(spectrogram)
 
         # find local maxima
+        print spectrogram
         local_maxima  = self.get_peaks(spectrogram, plot=False, amp_min=amp_min)
 
         #print "LOCAL MAXIMA\n" + str(local_maxima)
 
         # return hashes
-        return self.generate_hashes(local_maxima)
+        return self.generate_hashes(local_maxima, fan_value=fan_value)
 
     def get_peaks(self, spectrogram, plot=False, amp_min=DEFAULT_AMP_MIN):
 
         struct = generate_binary_structure(2, 1)
         neighborhood = iterate_structure(struct, PEAK_NEIGHBORHOOD_SIZE)
+        #print "NEIGH:\n" + str(neighborhood)
 
         #print "Spectrogram:\n " + str(spectrogram) + "\n Neighborhood:\n" + str(neighborhood)
 
@@ -188,6 +190,10 @@ class WaveDataComparator:
         background = (spectrogram == 0)
         eroded_background = binary_erosion(background, structure=neighborhood,
                                            border_value=1)
+
+        #print "LOCAL MAX:\n" + str(local_max)
+        #print 'BG:\n' + str(background)
+        #print "ERODED BG:\n" + str(eroded_background)
 
         # Boolean mask of spectrogram with True at peaks
         detected_peaks = local_max - eroded_background
@@ -226,7 +232,7 @@ class WaveDataComparator:
 
         return zip(frequency_idx, time_idx)
 
-    def generate_hashes(peaks, fan_value=DEFAULT_FAN_VALUE):
+    def generate_hashes(self, peaks, fan_value=DEFAULT_FAN_VALUE):
         """
         Hash list structure:
            sha1_hash[0:20]    time_offset
