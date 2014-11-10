@@ -2,6 +2,9 @@ __author__ = 'Deniz'
 
 from util import utilities
 
+# samples to extract into a given segment
+SAMPLES_PER_SEGMENT = 8192
+
 # Segment the data in the given wav file
 def segment_data(wave):
     format = wave.wave_data_format
@@ -12,18 +15,24 @@ def segment_data(wave):
 
     segment_interval = get_segment_interval(wave, format, chunk)
 
-    samples_per_segment = int(segment_interval * format.byte_rate /
-                              format.bytes_per_sample)
+    '''SAMPLES_PER_SEGMENT = int(segment_interval * format.byte_rate /
+                              format.bytes_per_sample)'''
 
-    num_segments = int(len(samples) / samples_per_segment)
+    num_segments = int(len(samples) / SAMPLES_PER_SEGMENT)
 
     segments = []
 
-    for i in xrange(num_segments):
-        start = i * samples_per_segment
-        end = start + samples_per_segment
+    tstep = float(SAMPLES_PER_SEGMENT)/format.sample_rate
 
-        segments.append(samples[start:end])
+    for i in xrange(num_segments):
+        start = i * SAMPLES_PER_SEGMENT
+        end = start + SAMPLES_PER_SEGMENT
+
+        if end > len(samples):
+            end = len(samples)
+            start = end - SAMPLES_PER_SEGMENT
+
+        segments.append((samples[start:end], i*tstep))
 
     return segments
 
