@@ -10,6 +10,7 @@ from scipy.ndimage.morphology import (generate_binary_structure,
                                       iterate_structure, binary_erosion)
 import hashlib
 from operator import itemgetter
+import os.path
 
 IDX_FREQ_I = 0
 IDX_TIME_J = 1
@@ -85,6 +86,10 @@ for x in range(len(FREQS)):
 # the sequence of numbers used in computing LSH values for fingerprints
 WEIGHTS = [-2, 5, -1, 2, -4]
 
+# Limit the number of fingerprint kept in memory
+LSH_LIMIT = 10000
+
+writtenToDisk = []
 
 class WaveDataComparator:
     def __init__(self, set1, set2):
@@ -100,26 +105,47 @@ class WaveDataComparator:
         lsh1 = {}
         lsh2 = {}
 
+        lshCnt = 0
+        limitHitp = False
+
         # get fingerprints for files in set 1, and add them
         # to lsh1
         for x in self.set1:
             x = self.makeFingerprints(x)
             for f in x:
                 hx = self.hashFunct(f)
-                if hx in lsh1:
-                    lsh1[hx].append(f)
-                else:
-                    lsh1[hx] = [f]
+
+                # Check if the fingerprint limit has been reached
+                if lshCnt > LSH_LIMIT:
+                    limitHitp = True
+                    # If so, write the remaining fingerprints to disk
+                    self.writeToDisk(hx, f)
+
+                if limitHitp is False:
+                    if hx in lsh1 and (limitHitp is False):
+                        lsh1[hx].append(f)
+                    else:
+                        lsh1[hx] = [f]
+                    lshCnt += 1  # Increment shared lsh counter
 
         # repeat above process for set 2 and lsh2
         for x in self.set2:
             x = self.makeFingerprints(x)
             for f in x:
                 hx = self.hashFunct(f)
-                if hx in lsh2:
-                    lsh2[hx].append(f)
-                else:
-                    lsh2[hx] = [f]
+
+                # Check if the fingerprint limit has been reached
+                if lshCnt > LSH_LIMIT:
+                    limitHitp = True
+                    # Write the remaining fingerprints to disk
+                    self.writeToDisk(hx, f)
+
+                if limitHitp is False:
+                    if hx in lsh2 and (limitHitp is False):
+                        lsh2[hx].append(f)
+                    else:
+                        lsh2[hx] = [f]
+                    lshCnt += 1  # Increment shared lsh counter
 
         #FIXME: after making LSH tables implement comparisons
 
@@ -181,6 +207,35 @@ class WaveDataComparator:
 
         return int(val)
 
+    # Write the given fingerprint to disk, naming the file after the hashkey
+    # Append the hashkey to a list of things we've written to disk
+    def writeToDisk(self, key, fingerprint):
+        # Get our current directory
+        cur_dir = os.path.dirname(os.path.abspath(__file__))
+        # Set our destination directory /tmp/
+        dest_dir = os.path.join(cur_dir, 'tmp')
+        # Try to make the tmp dir
+        try:
+            os.makedirs(dest_dir)
+        except OSError:
+            pass  # Already exists
+        # Create our target path
+        path = os.path.join(dest_dir, str(key)+'.txt')
+        # Write fingerprint to disk
+        with open(path, 'a') as stream:  # Open file in append mode
+            stream.write(str(fingerprint))
+
+        # Add hashkey to LOthings We've Written
+        writtenToDisk.append(key)
+        stream.close()
+
+    # Given a hashkey, try to find the corresponding fingerprint txt file
+    def readFromDisk(self, key):
+        try:
+            f = open('tmp/'+str(key)+".txt", 'r') # Open file in read mode
+            return f.read()
+        except (OSError, IOError) as e:
+            return  # File not found
 
 
 #####################################################################
