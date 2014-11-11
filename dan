@@ -25,6 +25,8 @@ class dan:
 
         self.tearDown()
 
+        return sys.exit(0)
+
     # set up temporary directory
     def setUp(self):
         if os.path.exists('/tmp/musicId'):
@@ -36,6 +38,7 @@ class dan:
     def tearDown(self):
         subprocess.call(['rm', '-r', '/tmp/musicId'])
 
+
 # Check if the command line argument(s) are acceptable
 def checkInput(self):
     # Declare variables to hold the files that are passed in to global scope
@@ -43,7 +46,6 @@ def checkInput(self):
     global set2
     set1 = None
     set2 = None
-
 
     # Parse command line input
     try:
@@ -131,7 +133,6 @@ def checkInput(self):
             sys.exit(2)
 
 
-
 # Checks the file's header and will throw an
 # error if the file was labelled .wav but not actually a wav file.
 def readFile(file1):
@@ -143,12 +144,14 @@ def readFile(file1):
                " format\n")
         sys.exit(2)
 
+
 # Basic comparison function. Call the waveDataComparator class to
 # determine equality and print the result
 def fileMatch(compareFile, file1, file2):
     if compareFile:
         print "MATCH " + os.path.basename(file1) + " " + os.path.basename(file2)
     return 0
+
 
 # Read format function. This is called when the first parameter is a directory
 def dirComp():
@@ -184,6 +187,7 @@ def dirComp():
 def usage():
     print "\nThis is the CLI for the dan audio matcher program\n"
     print 'Usage: ' + argv[0] + ' -f <set1> -f <set2>'
+
 
 # Return the wav data
 def read_wave_data(file_name):
