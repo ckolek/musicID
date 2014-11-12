@@ -15,13 +15,17 @@ from os.path import isfile, join
 Main class that runs all of the components of the dan audio matching program.
 """
 class dan:
+    def __init__(self):
+        self.set1 = None
+        self.set2 = None
+
     def run(self):
         self.setUp()
 
         # Check the arguments input from the command line
-        checkInput(self)
+        self.checkInput()
 
-        dirComp()
+        self.doComparison()
 
         self.tearDown()
 
@@ -36,101 +40,104 @@ class dan:
     def tearDown(self):
         subprocess.call(['rm', '-r', '/tmp/musicId'])
 
-# Check if the command line argument(s) are acceptable
-def checkInput(self):
-    # Declare variables to hold the files that are passed in to global scope
-    global set1
-    global set2
-    set1 = None
-    set2 = None
+    # Check if the command line argument(s) are acceptable
+    def checkInput(self):
+        # Parse command line input
+        try:
+            # Get everything on the command line after the file name
+            # getopt returns the options and arguments as two separate arrays
+            opts, args = getopt.getopt(argv[1:], 'hf:d:', ['help'])
 
+            # If the user does not use the proper syntax, tell them they
+            # have entered the wrong input and exit
+            if len(opts) < 2:
+                print ("ERROR: Incorrect input. Input two file paths with the -f"
+                       " option front of each file\n")
+                sys.exit(2)
 
-    # Parse command line input
-    try:
-        # Get everything on the command line after the file name
-        # getopt returns the options and arguments as two separate arrays
-        opts, args = getopt.getopt(argv[1:], 'hf:d:', ['help'])
-
-        # If the user does not use the proper syntax, tell them they
-        # have entered the wrong input and exit
-        if len(opts) < 2:
-            print ("ERROR: Incorrect input. Input two file paths with the -f"
-                   " option front of each file\n")
+            # If no options are provided notify the user
+            if not opts:
+                print ('ERROR: No tags provided. Please precede each file name with'
+                       ' the -f tag\n')
+        # If there is an error, print it out and exit
+        except getopt.GetoptError as err:
+            print str(err)
             sys.exit(2)
 
-        # If no options are provided notify the user
-        if not opts:
-            print ('ERROR: No tags provided. Please precede each file name with'
-                   ' the -f tag\n')
-    # If there is an error, print it out and exit
-    except getopt.GetoptError as err:
-        print str(err)
-        sys.exit(2)
-
-    # Loop through the resulting options and arguments
-    for o, a in opts:
-        # If the user asks for help, print out the usage function to tell them
-        # what to do
-        if o in ('-h', '--help'):
-            usage()
-        # If the user passes in a file location
-        elif o in '-f':
-            # If the file location is valid
-            if os.path.exists(a):
-                # Error checking to ensure that the file location actually is a file
-                if os.path.isfile(a):
-                    # If the file is equal to the first file passed in
-                    # assign it to set 1. Set1 check is there in case both files
-                    # being compared are the same
-                    if a == opts[0][1] and set1 is None:
-                        set1 = [a]
-                    # Otherwise, assign the argument to the set2 variable
+        # Loop through the resulting options and arguments
+        for o, a in opts:
+            # If the user asks for help, print out the usage function to tell them
+            # what to do
+            if o in ('-h', '--help'):
+                usage()
+            # If the user passes in a file location
+            elif o in '-f':
+                # If the file location is valid
+                if os.path.exists(a):
+                    # Error checking to ensure that the file location actually is a file
+                    if os.path.isfile(a):
+                        # If the file is equal to the first file passed in
+                        # assign it to set 1. Set1 check is there in case both files
+                        # being compared are the same
+                        if a == opts[0][1] and self.set1 is None:
+                            self.set1 = [a]
+                        # Otherwise, assign the argument to the set2 variable
+                        else:
+                            self.set2 = [a]
+                    # Print out an error stating that a file was not correctly passed in
                     else:
-                        set2 = [a]
-                # Print out an error stating that a file was not correctly passed in
-                else:
-                    print ('ERROR: Provided a directory as input when a file was'
-                            ' expected ' + a)
-                    sys.exit(2)
-            # Otherwise, tell the user that the file at the location does not
-            # exist
-            else:
-                print "ERROR: File location does not exist\n"
-                sys.exit(2)
-        # If the user passes in a directory
-        elif o in '-d':
-            # If the directory location is valid
-            if os.path.exists(a):
-                # Error checking to ensure that the directory location actually has
-                # a directory
-                if os.path.isdir(a):
-                    # If the directory is the first directory passed in, assign the
-                    # argument to set1 and make the set1dir variable true. set1 is None
-                    # is there in case two files being compared are the same
-                    if a == opts[0][1] and set1 is None:
-                        set1dir = True
-                        # Grab only the files in the first directory
-                        set1 = [ join(a, f) for f in listdir(a) if isfile(join(a, f))]
-                    # Otherwise, assign the argument to the set2 variable and
-                    # make the set2dir variable true
-                    else:
-                        # Grab only the files in the second directory
-                        set2dir = True
-                        set2 = [ join(a, f) for f in listdir(a) if isfile(join(a, f))]
-                # Otherwise, print out an error stating a directory was not correctly
-                else:
-                    print ('ERROR: Provided a file as input when a directory was'
-                            ' expected ' + a)
-                    sys.exit(2)
-            else:
-                # Otherwise, tell the user that the directory at the location does not
+                        print ('ERROR: Provided a directory as input when a file was'
+                                ' expected ' + a)
+                        sys.exit(2)
+                # Otherwise, tell the user that the file at the location does not
                 # exist
-                print "ERROR: Directory location does not exist\n"
+                else:
+                    print "ERROR: File location does not exist\n"
+                    sys.exit(2)
+            # If the user passes in a directory
+            elif o in '-d':
+                # If the directory location is valid
+                if os.path.exists(a):
+                    # Error checking to ensure that the directory location actually has
+                    # a directory
+                    if os.path.isdir(a):
+                        # If the directory is the first directory passed in, assign the
+                        # argument to set1. set1 is None is there in case two files being
+                        # compared at the same
+                        if a == opts[0][1] and self.set1 is None:
+                            # Grab only the files in the first directory
+                            self.set1 = [ join(a, f) for f in listdir(a) if isfile(join(a, f))]
+                        # Otherwise, assign the argument to the set2 variable
+                        else:
+                            # Grab only the files in the second directory
+                            self.set2 = [ join(a, f) for f in listdir(a) if isfile(join(a, f))]
+                    # Otherwise, print out an error stating a directory was not correctly
+                    else:
+                        print ('ERROR: Provided a file as input when a directory was'
+                                ' expected ' + a)
+                        sys.exit(2)
+                else:
+                    # Otherwise, tell the user that the directory at the location does not
+                    # exist
+                    print "ERROR: Directory location does not exist\n"
+                    sys.exit(2)
+            else:
+                usage()
                 sys.exit(2)
-        else:
-            sys.exit(2)
 
+    # Read format function. This is called when the first parameter is a directory
+    def doComparison(self):
+        # read all files in our sets
+        for i, f in enumerate(self.set1):
+            self.set1[i] = (readFile(f), f)
 
+        for i, f in enumerate(self.set2):
+            self.set2[i] = (readFile(f), f)
+
+        # Construct WaveDataComparator with sets of files
+        c = WaveDataComparator(self.set1, self.set2)
+        # Run compare method
+        c.compare()
 
 # Checks the file's header and will throw an
 # error if the file was labelled .wav but not actually a wav file.
@@ -142,35 +149,6 @@ def readFile(file1):
         print ("ERROR: " + os.path.basename(file1) + " is not a supported"
                " format\n")
         sys.exit(2)
-
-# Basic comparison function. Call the waveDataComparator class to
-# determine equality and print the result
-def fileMatch(compareFile, file1, file2):
-    if compareFile:
-        print "MATCH " + os.path.basename(file1) + " " + os.path.basename(file2)
-    return 0
-
-# Read format function. This is called when the first parameter is a directory
-def dirComp():
-
-    # read all files in our sets
-    for i in range(len(set1)):
-        set1[i] = (readFile(set1[i]), set1[i])
-
-    for i in range(len(set2)):
-        set2[i] = (readFile(set2[i]), set2[i])
-
-    # Construct WaveDataComparator with sets of files
-    c = WaveDataComparator(set1, set2)
-    # Run compare method
-    c.compare()
-
-
-
-# The usage information returned when -h parameter is given
-def usage():
-    print "\nThis is the CLI for the dan audio matcher program\n"
-    print 'Usage: ' + argv[0] + ' -f <set1> -f <set2>'
 
 # Return the wav data
 def read_wave_data(file_name):
@@ -231,6 +209,11 @@ def get_file_info(file_name):
         return get_file_info(name)
 
     return file_info
+
+# The usage information returned when -h parameter is given
+def usage():
+    print "\nThis is the CLI for the dan audio matcher program\n"
+    print 'Usage: ' + argv[0] + ' -f <set1> -f <set2>'
 
 # Call main run function
 if __name__ == "__main__":
