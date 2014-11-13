@@ -129,8 +129,6 @@ class WaveDataComparator:
             for f in x:
                 hx = self.hashFunct(f)
 
-                print sys.getsizeof(f)
-
                 # Check if the fingerprint limit has been reached
                 if lshCnt > LSH_LIMIT:
                     limitHitp = True
