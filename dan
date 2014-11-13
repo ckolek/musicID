@@ -152,17 +152,19 @@ def fileMatch(compareFile, file1, file2):
 
 # Read format function. This is called when the first parameter is a directory
 def dirComp():
-    # For every file in the first directory, get the data and compare against
-    # the second parameter
-    for f in set1:
-        wave1 = readFile(f)
 
-        # If the second set is also a directory, get the data from every file
-        # and compare against the file at the current index in the first set
-        for g in set2:
-            wave2 = readFile(g)
-            comp = WaveDataComparator(wave1, wave2)
-            fileMatch(comp.areMatching(), f, g)
+    # read all files in our sets
+    for i in range(len(set1)):
+        set1[i] = (readFile(set1[i]), set1[i])
+
+    for i in range(len(set2)):
+        set2[i] = (readFile(set2[i]), set2[i])
+
+    # Construct WaveDataComparator with sets of files
+    c = WaveDataComparator(set1, set2)
+    # Run compare method
+    c.compare()
+
 
 
 # The usage information returned when -h parameter is given
