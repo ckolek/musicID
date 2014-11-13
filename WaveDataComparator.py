@@ -163,11 +163,33 @@ class WaveDataComparator:
         # check to see our amplitudes of frequency bands
         # are of similar value
         for i in range(5):
-            val = val and (.9 <= fp1[0][i]/fp2[0][i] <= 1.1)
+            bv1 = fp1[0][i]
+            bv2 = fp2[0][i]
+
+            # if band power values are zero, simply change them to number
+            # very close to 0 for division purposes
+            if bv1 == 0:
+                bv1 = 0.000000001
+            if bv2 == 0:
+                bv2 = 0.000000001
+
+
+            val = val and (.9 <= bv1/bv2 <= 1.1)
 
         # next, see if frequencies in the fingerprints are similar
         for i in range(6,10):
-            val = val and (.9 <= fp1[0][i]/fp2[0][i] <= 1.1)
+
+            fv1 = fp1[0][i]
+            fv2 = fp2[0][i]
+
+            # if frequencies are zero, simply change them to number very close
+            # to 0 for division purposes
+            if bv1 == 0:
+                bv1 = 0.000000001
+            if bv2 == 0:
+                bv2 = 0.000000001
+
+            val = val and (.9 <= fv1/fv2 <= 1.1)
 
         return val
 
@@ -227,7 +249,7 @@ class WaveDataComparator:
         val = 0
         lw = len(WEIGHTS)
         for x in range(lw):
-            val += WEIGHTS[x]*(fprint[0][x]/100)
+            val += WEIGHTS[x]*(fprint[0][x]/100.0)
 
         return int(val)
 
@@ -238,11 +260,19 @@ class WaveDataComparator:
 
         # get the ratio between the largest member in the array and
         # our normalizing constant
-        ratio = max(a)/NORM_CONS
+        ratio = float(max(a))/NORM_CONS
+
+        # check to make sure ratio doesn't wind up 0 
+        # (could happen during segments of silence)
+        if ratio == 0:
+            ratio = 1.0
 
         # divide all members in the array by the ratio
         for i in range(len(a)):
-            a[i] /= ratio
+            try:
+                a[i] = a[i]/ratio
+            except RuntimeWarning:
+                print a[i]
 
 
     # print the string resulting in matching two fingerprints
