@@ -165,19 +165,6 @@ def dirComp():
     # Run compare method
     c.compare()
 
-    '''
-    # For every file in the first directory, get the data and compare against
-    # the second parameter
-    for f in set1:
-        wave1 = readFile(f)
-
-        # If the second set is also a directory, get the data from every file
-        # and compare against the file at the current index in the first set
-        for g in set2:
-            wave2 = readFile(g)
-            comp = WaveDataComparator(wave1, wave2)
-            fileMatch(comp.areMatching(), f, g)
-    '''
 
 
 # The usage information returned when -h parameter is given
