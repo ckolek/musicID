@@ -6,7 +6,7 @@
 .settings/
 
 # Intellij
-#.idea/   # According to the internets, ignoring the entirety of .idea/ might be a bad .idea/
+#.idea/
 
 # User-specific stuff:
 .idea/workspace.xml

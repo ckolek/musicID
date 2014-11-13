@@ -23,7 +23,8 @@ class WaveDataFormat:
         - Bits Per Sample (unsigned 16-bit integer)
     """
 
-    def __init__(self, audio_format, num_channels, sample_rate, byte_rate, block_align, bits_per_sample):
+    def __init__(self, audio_format, num_channels, sample_rate,
+                 byte_rate, block_align, bits_per_sample):
         """
         :param audio_format: the Audio Format (unsigned 16-bit integer)
         :param num_channels: the Number of Channels (unsigned 16-bit integer)
@@ -59,7 +60,11 @@ class WaveDataFormat:
         return chunk.length() / float(self.byte_rate)
 
     def __str__(self):
-        return "audioFormat: {}, numChannels: {}, sampleRate: {}, byteRate: {}, blockAlign: {}, bitsPerSample: {}".format(self.audio_format, self.num_channels, self.sample_rate, self.byte_rate, self.block_align, self.bits_per_sample)
+        return "audioFormat: {}, numChannels: {}, sampleRate: {}, " \
+               "byteRate: {}, blockAlign: {}, " \
+               "bitsPerSample: {}".format(self.audio_format, self.num_channels,
+                                          self.sample_rate, self.byte_rate,
+                                          self.block_align,self.bits_per_sample)
 
     def __repr__(self):
         return self.__str__()
