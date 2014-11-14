@@ -355,3 +355,29 @@ class WaveDataComparator:
         t2 = str(round(fp2[1], 1))
 
         print (s % (fn1, fn2, t1, t2))
+
+    # parse a string representation of a fingerprint
+    # converting it into an actual fingerprint
+    def parse_fprint_string(self, s):
+
+        # split the fingerprint string along
+        # occurances of ', '
+        splitString = s.split(', ')
+
+        fprint = []
+
+        # go through the fingerprint numerical data
+        # in the split up string, convert to floats
+        for i in range(10):
+            if i == 0:
+                fprint.append(float(splitString[i][2:len(splitString[i])]))
+            elif i == 9:
+                fprint.append(float(splitString[i][0:len(splitString[i])-1]))
+            else:
+                fprint.append(float(splitString[i]))
+
+        offset = float(splitString[10])
+
+        name = splitString[11][1:len(splitString[11])-2]
+
+        return (fprint, offset, name)
