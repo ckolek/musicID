@@ -131,10 +131,17 @@ class WaveDataComparator:
 
                 # Check if the fingerprint limit has been reached
                 if lshCnt > LSH_LIMIT:
-                    limitHitp = True
-                    lsh2[hx] = "wroteToDisk"
-                    # If so, write the remaining fingerprints to disk
-                    self.writeToDisk(hx, f)
+                    if hx not in lsh2:
+                        lsh2[hx] = "wroteToDisk"
+                        # Write the remaining fingerprints to disk
+                        self.writeToDisk(hx, f)
+                    # otherwise, if that key already exists in the
+                    # LSH table
+                    else:
+                        f = lsh2[hx] + f
+                        lsh2[hx] = "wroteToDisk"
+                        # Write the fingerprints to disk
+                        self.writeToDisk(hx, f, isList=True)
 
                 if limitHitp is False:
                     if hx in lsh1 and (limitHitp is False):
@@ -152,9 +159,19 @@ class WaveDataComparator:
                 # Check if the fingerprint limit has been reached
                 if lshCnt > LSH_LIMIT:
                     limitHitp = True
-                    lsh2[hx] = "wroteToDisk"
-                    # Write the remaining fingerprints to disk
-                    self.writeToDisk(hx, f)
+                    # if that hash value is not yet in the LSH table...
+                    if hx not in lsh2:
+                        lsh2[hx] = "wroteToDisk"
+                        # Write the remaining fingerprints to disk
+                        self.writeToDisk(hx, f)
+                    # otherwise, if that key already exists in the
+                    # LSH table
+                    else:
+                        f = lsh2[hx] + f
+                        lsh2[hx] = "wroteToDisk"
+                        # Write the fingerprints to disk
+                        self.writeToDisk(hx, f, isList=True)
+
 
                 if limitHitp is False:
                     if hx in lsh2 and (limitHitp is False):
@@ -306,7 +323,7 @@ class WaveDataComparator:
 
     # Write the given fingerprint to disk, naming the file after the hashkey
     # Append the hashkey to a list of things we've written to disk
-    def writeToDisk(self, key, fingerprint):
+    def writeToDisk(self, key, fingerprint, isList=False):
         # Get our current directory
         cur_dir = os.path.dirname(os.path.abspath(__file__))
         # Set our destination directory /tmp/
@@ -320,7 +337,15 @@ class WaveDataComparator:
         path = os.path.join(dest_dir, str(key)+'.txt')
         # Write fingerprint to disk
         with open(path, 'a') as stream:  # Open file in append mode
-            stream.write(str(fingerprint)+"\n")
+            # if the fingerprint variable is actually a list, simply
+            # make strings of all the fingerprints followed by newlines
+            if isList:
+                s = ""
+                for x in fingerprint:
+                    s = s + str(x) + "\n"
+                stream.write(s)
+            else:
+                stream.write(str(fingerprint)+"\n")
 
         # Add hashkey to LOthings We've Written
         writtenToDisk.append(key)
