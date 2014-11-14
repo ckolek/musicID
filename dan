@@ -131,15 +131,21 @@ class dan:
 
     # Read format function. This is called when the first parameter is a directory
     def doComparison(self):
-        # read all files in our sets
-        for i, f in enumerate(self.set1):
-            self.set1[i] = (readFile(f), f)
+        # construct WaveDataComparator with 2 sound banks
+        c = WaveDataComparator(2)
 
-        for i, f in enumerate(self.set2):
-            self.set2[i] = (readFile(f), f)
+        # read all files in set1 and register them in comparator
+        for f in self.set1:
+            wave = readFile(f)
 
-        # Construct WaveDataComparator with sets of files
-        c = WaveDataComparator(self.set1, self.set2)
+            c.register_sound(f, wave, 0)
+
+        # read all files in set2 and register them in comparator
+        for f in self.set2:
+            wave = readFile(f)
+
+            c.register_sound(f, wave, 1)
+
         # Run compare method
         c.compare()
 

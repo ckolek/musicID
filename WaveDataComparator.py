@@ -106,60 +106,44 @@ LSH_LIMIT = 2250000
 writtenToDisk = []
 
 class WaveDataComparator:
-    def __init__(self, set1, set2):
-        self.set1 = set1
-        self.set2 = set2
+    def __init__(self, num_banks):
+        self.fingerprints = list()
+        self.lshs = list()
+        self.num_fingerprints = 0
 
+        for i in range(num_banks):
+            self.fingerprints.append(dict())
+            self.lshs.append(dict())
+
+    def register_sound(self, file_name, wave, bank_index):
+        # create fingerprint for the sound
+        fingerprints = self.makeFingerprints(file_name, wave)
+
+        # associate fingerprint with file name
+        self.fingerprints[bank_index][file_name] = fingerprints
+        
+        lsh = self.lshs[bank_index]
+
+        # add fingerprints to LSH tables
+        for fingerprint in fingerprints:
+            # only keep LSH_LIMIT fingerprints in memory
+            if self.num_fingerprints < LSH_LIMIT:
+                hash_value = fingerprint.hash_value
+                
+                if not lsh.has_key(hash_value):
+                    lsh[hash_value] = [fingerprint]
+                else:
+                    lsh[hash_value].append(fingerprint)
+            # write all others to disk
+            else:
+                self.writeToDisk(fingerprint)
+            
+            self.num_fingerprints += 1
 
     # Compare function: computes 2 LSH tables for given fingerprints
     # and compares the fingerprints
     def compare(self):
-
-        # two LSH tables to be used for comparisons
-        lsh1 = {}
-        lsh2 = {}
-
-        lshCnt = 0
-        limitHitp = False
-
-        # get fingerprints for files in set 1, and add them
-        # to lsh1
-        for x in self.set1:
-            x = self.makeFingerprints(x)
-            for f in x:
-                hx = self.hashFunct(f)
-
-                # Check if the fingerprint limit has been reached
-                if lshCnt > LSH_LIMIT:
-                    limitHitp = True
-                    # If so, write the remaining fingerprints to disk
-                    self.writeToDisk(hx, f)
-
-                if limitHitp is False:
-                    if hx in lsh1 and (limitHitp is False):
-                        lsh1[hx].append(f)
-                    else:
-                        lsh1[hx] = [f]
-                    lshCnt += 1  # Increment shared lsh counter
-
-        # repeat above process for set 2 and lsh2
-        for x in self.set2:
-            x = self.makeFingerprints(x)
-            for f in x:
-                hx = self.hashFunct(f)
-
-                # Check if the fingerprint limit has been reached
-                if lshCnt > LSH_LIMIT:
-                    limitHitp = True
-                    # Write the remaining fingerprints to disk
-                    self.writeToDisk(hx, f)
-
-                if limitHitp is False:
-                    if hx in lsh2 and (limitHitp is False):
-                        lsh2[hx].append(f)
-                    else:
-                        lsh2[hx] = [f]
-                    lshCnt += 1  # Increment shared lsh counter
+        lsh1, lsh2 = self.lshs[0:2]
 
         # instantiate a list for seeing which audio tracks have matched
         # with each other to avoid repeats
@@ -182,23 +166,22 @@ class WaveDataComparator:
                     l2 = l2 + lsh2[v]
             for fp in lsh1[k]:
                 for fp2 in l2:
-                    if set([fp[2], fp2[2]]) not in matched:
+                    pair = (fp.file_name, fp2.file_name)
+                    if pair not in matched:
                         if self.compare_fprints(fp, fp2):
-                            matched.append(set([fp[2], fp2[2]]))
+                            matched.append(pair)
                             self.print_match(fp, fp2)
 
     # compares two fingerprints, returns true if a match is found
     def compare_fprints(self, fp1, fp2):
-
-
         # value, will turn false if anything is found to be inconsistent
         val = True
 
         # check to see our amplitudes of frequency bands
         # are of similar value
         for i in range(5):
-            bv1 = fp1[0][i]
-            bv2 = fp2[0][i]
+            bv1 = fp1.values[i]
+            bv2 = fp2.values[i]
 
             # if band power values are zero, simply change them to number
             # very close to 0 for division purposes
@@ -213,8 +196,8 @@ class WaveDataComparator:
         # next, see if frequencies in the fingerprints are similar
         for i in range(6,10):
 
-            fv1 = fp1[0][i]
-            fv2 = fp2[0][i]
+            fv1 = fp1.values[i]
+            fv2 = fp2.values[i]
 
             # if frequencies are zero, simply change them to number very close
             # to 0 for division purposes
@@ -227,12 +210,10 @@ class WaveDataComparator:
 
         return val
 
-
     # this function returns a list of fingerprints for a given file
-    def makeFingerprints(self, file):
-
+    def makeFingerprints(self, file_name, wave):
         # Get a list of segments to be fingerprinted
-        segList = Segmenter.segment_data(file[0])
+        segList = Segmenter.segment_data(wave)
 
         # array where fingerprints will be stored
         fprints = []
@@ -241,15 +222,20 @@ class WaveDataComparator:
         # in place into its corresponding fingerprint
         # conversions will be to a tuple of the form:
         # (fingerprint, time offset of that fingerprint, file name)
-        for n in range(len(segList)):
-            t = (self.fingerprint(segList[n][0]), segList[n][1], file[1])
-            fprints.append(t)
+        for i, segment in enumerate(segList):
+            fprint_values = self.fingerprint(segment[0])
+            hash_value = self.hashFunct(fprint_values)
+
+            fprints.append(Fingerprint(file_name,
+                                       segment[1],
+                                       fprint_values,
+                                       hash_value,
+                                       i))
 
         return fprints
 
     # compute a fingerprint for a given range of samples
     def fingerprint(self, samples, bands = BANDS):
-
         # take an fft over our samples and convert the complex values
         # to their magnitudes (only take positive frequencies, then normalize
         samples = list(fft(samples))
@@ -270,26 +256,23 @@ class WaveDataComparator:
 
         top5 = sorted(top5)
 
-
         return fprint+top5
-
 
     # a hash function for our LSH tables, takes a fingerprint
     # and returns a hashvalue for that fingerprint
-    def hashFunct(self, fprint):
-
+    def hashFunct(self, fprint_values):
         # the hash function will be a sequence of weights times
         # the band strengths plus the average of the strongest frequencies
         val = 0
         lw = len(WEIGHTS)
         for x in range(lw):
-            val += WEIGHTS[x]*(fprint[0][x]/100.0)
+            val += WEIGHTS[x]*(fprint_values[x]/100.0)
 
         return int(val)
 
     # Write the given fingerprint to disk, naming the file after the hashkey
     # Append the hashkey to a list of things we've written to disk
-    def writeToDisk(self, key, fingerprint):
+    def writeToDisk(self, fingerprint):
         # Get our current directory
         cur_dir = os.path.dirname(os.path.abspath(__file__))
         # Set our destination directory /tmp/
@@ -300,13 +283,14 @@ class WaveDataComparator:
         except OSError:
             pass  # Already exists
         # Create our target path
-        path = os.path.join(dest_dir, str(key)+'.txt')
+        path = os.path.join(dest_dir, str(fingerprint.hash_value)+'.txt')
         # Write fingerprint to disk
         with open(path, 'a') as stream:  # Open file in append mode
             stream.write(str(fingerprint))
+            stream.write('\n')
 
         # Add hashkey to LOthings We've Written
-        writtenToDisk.append(key)
+        writtenToDisk.append(fingerprint.hash_value)
         stream.close()
 
     # Given a hashkey, try to find the corresponding fingerprint txt file
@@ -320,7 +304,6 @@ class WaveDataComparator:
     # normalizes an array to a defined max value, maintaining
     # ratios between numbers in the array
     def normalize(self, a):
-
         # get the ratio between the largest member in the array and
         # our normalizing constant
         ratio = float(max(a))/NORM_CONS
@@ -340,18 +323,32 @@ class WaveDataComparator:
 
     # print the string resulting in matching two fingerprints
     def print_match(self, fp1, fp2):
-
-        s = "MATCH: %s %s %s %s"
+        s = "MATCH %s %s %s %s"
 
         # extract short names of our files
-        fn1 = fp1[2].split('/')
+        fn1 = fp1.file_name.split('/')
         fn1 = fn1[len(fn1)-1]
 
-        fn2 = fp2[2].split('/')
+        fn2 = fp2.file_name.split('/')
         fn2 = fn2[len(fn2)-1]
 
         # get times rounded to nearest tenth
-        t1 = str(round(fp1[1], 1))
-        t2 = str(round(fp2[1], 1))
+        t1 = str(round(fp1.start_time, 1))
+        t2 = str(round(fp2.start_time, 1))
 
         print (s % (fn1, fn2, t1, t2))
+
+class Fingerprint:
+    def __init__(self, file_name, start_time, values, hash_value, index):
+        self.file_name = file_name
+        self.start_time = start_time
+        self.values = values
+        self.hash_value = hash_value
+        self.index = index
+
+    def __str__(self):
+        return "'{}', {}, {}, {}, {}".format(self.file_name,
+                                             self.start_time,
+                                             self.values,
+                                             self.hash_value,
+                                             self.index)
