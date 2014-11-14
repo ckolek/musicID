@@ -347,8 +347,20 @@ class Fingerprint:
         self.index = index
 
     def __str__(self):
-        return "'{}', {}, {}, {}, {}".format(self.file_name,
+        return "{}|{}|{}|{}|{}".format(self.file_name,
                                              self.start_time,
                                              self.values,
                                              self.hash_value,
                                              self.index)
+
+    def parse(string):
+        parts = string.split('|')
+
+        file_name = parts[0]
+        start_time = float(parts[1])
+        values = map(parts[2][1:-2].split(','), lambda s: float(s.strip()))
+        hash_value = int(parts[3])
+        index = int(parts[4])
+
+        return Fingerprint(file_name, start_time, values, hash_value, index)
+
