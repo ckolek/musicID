@@ -29,6 +29,8 @@ class dan:
 
         self.tearDown()
 
+        return sys.exit(0)
+
     # set up temporary directory
     def setUp(self):
         if os.path.exists('/tmp/musicId'):
@@ -74,7 +76,8 @@ class dan:
             elif o in '-f':
                 # If the file location is valid
                 if os.path.exists(a):
-                    # Error checking to ensure that the file location actually is a file
+                    # Error checking to ensure that the file location is
+                    # actually a file
                     if os.path.isfile(a):
                         # If the file is equal to the first file passed in
                         # assign it to set 1. Set1 check is there in case both files
@@ -84,10 +87,10 @@ class dan:
                         # Otherwise, assign the argument to the set2 variable
                         else:
                             self.set2 = [a]
-                    # Print out an error stating that a file was not correctly passed in
+                    # Print out an error stating that a file was not
+                    # correctly passed in
                     else:
-                        print ('ERROR: Provided a directory as input when a file was'
-                                ' expected ' + a)
+                        print "ERROR: File location does not exist\n"
                         sys.exit(2)
                 # Otherwise, tell the user that the file at the location does not
                 # exist
@@ -98,32 +101,33 @@ class dan:
             elif o in '-d':
                 # If the directory location is valid
                 if os.path.exists(a):
-                    # Error checking to ensure that the directory location actually has
-                    # a directory
+                    # Error checking to ensure that the directory location actually
+                    # has a directory
                     if os.path.isdir(a):
-                        # If the directory is the first directory passed in, assign the
-                        # argument to set1. set1 is None is there in case two files being
-                        # compared at the same
+                        # If the directory is the first directory passed in, assign
+                        # the argument to set1 
+                        # set1 is None is there in case two files being compared
+                        # are the same
                         if a == opts[0][1] and self.set1 is None:
                             # Grab only the files in the first directory
-                            self.set1 = [ join(a, f) for f in listdir(a) if isfile(join(a, f))]
+                            self.set1 = [join(a, f)
+                                    for f in listdir(a) if isfile(join(a, f))]
                         # Otherwise, assign the argument to the set2 variable
                         else:
                             # Grab only the files in the second directory
-                            self.set2 = [ join(a, f) for f in listdir(a) if isfile(join(a, f))]
-                    # Otherwise, print out an error stating a directory was not correctly
+                            self.set2 = [join(a, f)
+                                    for f in listdir(a) if isfile(join(a, f))]
+                    # Otherwise, print out an error stating a directory
+                    # was not correctly
                     else:
-                        print ('ERROR: Provided a file as input when a directory was'
-                                ' expected ' + a)
+                        print ('ERROR: Provided a file as input when a directory'
+                               ' was expected ' + a)
                         sys.exit(2)
                 else:
-                    # Otherwise, tell the user that the directory at the location does not
-                    # exist
+                    # Otherwise, tell the user that the directory at the
+                    # location does not exist
                     print "ERROR: Directory location does not exist\n"
                     sys.exit(2)
-            else:
-                usage()
-                sys.exit(2)
 
     # Read format function. This is called when the first parameter is a directory
     def doComparison(self):
