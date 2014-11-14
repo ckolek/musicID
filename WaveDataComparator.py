@@ -132,6 +132,7 @@ class WaveDataComparator:
                 # Check if the fingerprint limit has been reached
                 if lshCnt > LSH_LIMIT:
                     limitHitp = True
+                    lsh2[hx] = "wroteToDisk"
                     # If so, write the remaining fingerprints to disk
                     self.writeToDisk(hx, f)
 
@@ -151,6 +152,7 @@ class WaveDataComparator:
                 # Check if the fingerprint limit has been reached
                 if lshCnt > LSH_LIMIT:
                     limitHitp = True
+                    lsh2[hx] = "wroteToDisk"
                     # Write the remaining fingerprints to disk
                     self.writeToDisk(hx, f)
 
@@ -179,8 +181,23 @@ class WaveDataComparator:
             l2 = []
             for v in k2:
                 if span[1] >= v >= span[0]:
-                    l2 = l2 + lsh2[v]
-            for fp in lsh1[k]:
+                    # Check if we've written the fingerprints @ this key to disk
+                    if(lsh2[v] == "wroteToDisk"):
+                        # If so, read it
+                        l2 = l2 + self.readFromDisk(v)
+                    # Otherwise get list of keys normally
+                    else:
+                        l2 = l2 + lsh2[v]
+
+            # Check if these fingerprints have been written to disk
+            fps = lsh1[k]
+            # If so, pull them all from disk
+            if(fps == "wroteToDisk"):
+                fps = self.readFromDisk(k)
+
+            # Look at fingerprints at the key in lsh1, compare to fingerprints
+            # in lsh2 that might match.
+            for fp in fps:
                 for fp2 in l2:
                     if set([fp[2], fp2[2]]) not in matched:
                         if self.compare_fprints(fp, fp2):
@@ -293,7 +310,7 @@ class WaveDataComparator:
         # Get our current directory
         cur_dir = os.path.dirname(os.path.abspath(__file__))
         # Set our destination directory /tmp/
-        dest_dir = os.path.join(cur_dir, 'tmp')
+        dest_dir = os.path.join(cur_dir, 'tmp/lsh')
         # Try to make the tmp dir
         try:
             os.makedirs(dest_dir)
@@ -303,7 +320,7 @@ class WaveDataComparator:
         path = os.path.join(dest_dir, str(key)+'.txt')
         # Write fingerprint to disk
         with open(path, 'a') as stream:  # Open file in append mode
-            stream.write(str(fingerprint))
+            stream.write(str(fingerprint)+"\n")
 
         # Add hashkey to LOthings We've Written
         writtenToDisk.append(key)
@@ -312,8 +329,10 @@ class WaveDataComparator:
     # Given a hashkey, try to find the corresponding fingerprint txt file
     def readFromDisk(self, key):
         try:
-            f = open('tmp/'+str(key)+".txt", 'r') # Open file in read mode
-            return f.read()
+            f = open('tmp/lsh/'+str(key)+".txt", 'r') # Open file in read mode
+            readFile = f.read()
+            listOfFingerprints = readFile.splitlines()
+            return listOfFingerprints
         except (OSError, IOError) as e:
             return  # File not found
 
