@@ -151,26 +151,69 @@ class WaveDataComparator:
 
         # go through fingerprints in LSH1, compare them
         # to values of close hashes in LSH2
-        k1 = sorted(lsh1.keys())
-        k2 = sorted(lsh2.keys())
-        lk2 = len(k2)
+        keys1 = sorted(lsh1.keys())
+        keys2 = sorted(lsh2.keys())
 
         # go through keys in lsh1, each time find the nearest
         # neighbor keys in lsh2, and compare values in lsh1 hashed to k
         # to things hashed to nearby values in lsh2
-        for k in k1:
-            span = (k-LSH_SPAN, k+LSH_SPAN)
+        for key1 in keys1:
+            span = (key1-LSH_SPAN, key1+LSH_SPAN)
+
             l2 = []
-            for v in k2:
-                if span[1] >= v >= span[0]:
-                    l2 = l2 + lsh2[v]
-            for fp in lsh1[k]:
+            for key2 in keys2:
+                if key2 < span[0]:
+                    continue
+                elif key2 > span[1]:
+                    break
+                else:
+                    l2.extend(lsh2[key2])
+
+            for fp1 in lsh1[key1]:
                 for fp2 in l2:
-                    pair = (fp.file_name, fp2.file_name)
-                    if pair not in matched:
-                        if self.compare_fprints(fp, fp2):
-                            matched.append(pair)
-                            self.print_match(fp, fp2)
+                    pair = (fp1.file_name, fp2.file_name)
+
+                    if pair not in matched and self.are_matching(fp1, fp2):
+                        matched.append(pair)
+
+                        self.print_match(fp1, fp2)
+
+    # check if the fingerprints mark the start of a matching segment of audio
+    #  of at least 5 seconds in length
+    def are_matching(self, fp1, fp2):
+        if not self.compare_fprints(fp1, fp2):
+            return False
+
+        sound1_fps = self.fingerprints[0][fp1.file_name]
+        sound2_fps = self.fingerprints[1][fp2.file_name]
+
+        matching_count = 1
+
+        # loop through all remaining fingerprints in sounds being compared
+        while True:
+            _fp1_index = fp1.index + matching_count
+            _fp2_index = fp2.index + matching_count
+
+            # check if we have passed the last fingerprints
+            if _fp1_index >= len(sound1_fps) or _fp2_index >= len(sound2_fps):
+                return False
+
+            _fp1 = sound1_fps[_fp1_index]
+            _fp2 = sound2_fps[_fp2_index]
+
+            _fp1_offset = _fp1.start_time - fp1.start_time
+            _fp2_offset = _fp2.start_time - fp2.start_time
+
+            # check if the matching segments constitute at least a 5 second
+            # segment of  audio
+            if _fp1_offset >= 5.0 and _fp2_offset >= 5.0:
+                return True
+
+            # check if the current fingerprints match
+            if not self.compare_fprints(_fp1, _fp2):
+                return False
+
+            matching_count += 1
 
     # compares two fingerprints, returns true if a match is found
     def compare_fprints(self, fp1, fp2):
@@ -189,7 +232,6 @@ class WaveDataComparator:
                 bv1 = 0.000000001
             if bv2 == 0:
                 bv2 = 0.000000001
-
 
             val = val and (.9 <= bv1/bv2 <= 1.1)
 
@@ -338,13 +380,29 @@ class WaveDataComparator:
 
         print (s % (fn1, fn2, t1, t2))
 
+# A class that holds information about the fingerprint of a segment of
+#  WAVE audio
 class Fingerprint:
     def __init__(self, file_name, start_time, values, hash_value, index):
+        """
+        :param file_name: the name of the file the audio is from
+        :param start_time: the offset in time of the segment within the
+          complete audio
+        :param values: the fingerprint values
+        :param hash_value: the hashed value of the fingerprint values
+          (for LSH)
+        :param index: the index of the segment within the complete
+          collection of segments for the audio
+        """
+
         self.file_name = file_name
         self.start_time = start_time
         self.values = values
         self.hash_value = hash_value
         self.index = index
+
+    def __repr__(self):
+        return self.__str__()
 
     def __str__(self):
         return "{}|{}|{}|{}|{}".format(self.file_name,
