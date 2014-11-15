@@ -37,7 +37,6 @@ class dan:
     # clean up temporary directory
     def tearDown(self):
         subprocess.call(['rm', '-r', '/tmp/musicId'])
-        subprocess.call(['rm', '-r', '/tmp/lsh'])
 
 
 # Check if the command line argument(s) are acceptable
