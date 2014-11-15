@@ -131,9 +131,17 @@ class WaveDataComparator:
 
                 # Check if the fingerprint limit has been reached
                 if lshCnt > LSH_LIMIT:
-                    limitHitp = True
-                    # If so, write the remaining fingerprints to disk
-                    self.writeToDisk(hx, f)
+                    if hx not in lsh2:
+                        lsh2[hx] = "wroteToDisk"
+                        # Write the remaining fingerprints to disk
+                        self.writeToDisk(hx, f)
+                    # otherwise, if that key already exists in the
+                    # LSH table
+                    else:
+                        f = lsh2[hx] + f
+                        lsh2[hx] = "wroteToDisk"
+                        # Write the fingerprints to disk
+                        self.writeToDisk(hx, f, isList=True)
 
                 if limitHitp is False:
                     if hx in lsh1 and (limitHitp is False):
@@ -151,8 +159,19 @@ class WaveDataComparator:
                 # Check if the fingerprint limit has been reached
                 if lshCnt > LSH_LIMIT:
                     limitHitp = True
-                    # Write the remaining fingerprints to disk
-                    self.writeToDisk(hx, f)
+                    # if that hash value is not yet in the LSH table...
+                    if hx not in lsh2:
+                        lsh2[hx] = "wroteToDisk"
+                        # Write the remaining fingerprints to disk
+                        self.writeToDisk(hx, f)
+                    # otherwise, if that key already exists in the
+                    # LSH table
+                    else:
+                        f = lsh2[hx] + f
+                        lsh2[hx] = "wroteToDisk"
+                        # Write the fingerprints to disk
+                        self.writeToDisk(hx, f, isList=True)
+
 
                 if limitHitp is False:
                     if hx in lsh2 and (limitHitp is False):
@@ -179,8 +198,23 @@ class WaveDataComparator:
             l2 = []
             for v in k2:
                 if span[1] >= v >= span[0]:
-                    l2 = l2 + lsh2[v]
-            for fp in lsh1[k]:
+                    # Check if we've written the fingerprints @ this key to disk
+                    if(lsh2[v] == "wroteToDisk"):
+                        # If so, read it
+                        l2 = l2 + self.readFromDisk(v)
+                    # Otherwise get list of keys normally
+                    else:
+                        l2 = l2 + lsh2[v]
+
+            # Check if these fingerprints have been written to disk
+            fps = lsh1[k]
+            # If so, pull them all from disk
+            if(fps == "wroteToDisk"):
+                fps = self.readFromDisk(k)
+
+            # Look at fingerprints at the key in lsh1, compare to fingerprints
+            # in lsh2 that might match.
+            for fp in fps:
                 for fp2 in l2:
                     if set([fp[2], fp2[2]]) not in matched:
                         if self.compare_fprints(fp, fp2):
@@ -289,11 +323,11 @@ class WaveDataComparator:
 
     # Write the given fingerprint to disk, naming the file after the hashkey
     # Append the hashkey to a list of things we've written to disk
-    def writeToDisk(self, key, fingerprint):
+    def writeToDisk(self, key, fingerprint, isList=False):
         # Get our current directory
         cur_dir = os.path.dirname(os.path.abspath(__file__))
         # Set our destination directory /tmp/
-        dest_dir = os.path.join(cur_dir, 'tmp')
+        dest_dir = os.path.join(cur_dir, 'tmp/lsh')
         # Try to make the tmp dir
         try:
             os.makedirs(dest_dir)
@@ -303,7 +337,15 @@ class WaveDataComparator:
         path = os.path.join(dest_dir, str(key)+'.txt')
         # Write fingerprint to disk
         with open(path, 'a') as stream:  # Open file in append mode
-            stream.write(str(fingerprint))
+            # if the fingerprint variable is actually a list, simply
+            # make strings of all the fingerprints followed by newlines
+            if isList:
+                s = ""
+                for x in fingerprint:
+                    s = s + str(x) + "\n"
+                stream.write(s)
+            else:
+                stream.write(str(fingerprint)+"\n")
 
         # Add hashkey to LOthings We've Written
         writtenToDisk.append(key)
@@ -312,8 +354,10 @@ class WaveDataComparator:
     # Given a hashkey, try to find the corresponding fingerprint txt file
     def readFromDisk(self, key):
         try:
-            f = open('tmp/'+str(key)+".txt", 'r') # Open file in read mode
-            return f.read()
+            f = open('tmp/lsh/'+str(key)+".txt", 'r') # Open file in read mode
+            readFile = f.read()
+            listOfFingerprints = readFile.splitlines()
+            return listOfFingerprints
         except (OSError, IOError) as e:
             return  # File not found
 
@@ -355,3 +399,29 @@ class WaveDataComparator:
         t2 = str(round(fp2[1], 1))
 
         print (s % (fn1, fn2, t1, t2))
+
+    # parse a string representation of a fingerprint
+    # converting it into an actual fingerprint
+    def parse_fprint_string(self, s):
+
+        # split the fingerprint string along
+        # occurances of ', '
+        splitString = s.split(', ')
+
+        fprint = []
+
+        # go through the fingerprint numerical data
+        # in the split up string, convert to floats
+        for i in range(10):
+            if i == 0:
+                fprint.append(float(splitString[i][2:len(splitString[i])]))
+            elif i == 9:
+                fprint.append(float(splitString[i][0:len(splitString[i])-1]))
+            else:
+                fprint.append(float(splitString[i]))
+
+        offset = float(splitString[10])
+
+        name = splitString[11][1:len(splitString[11])-2]
+
+        return (fprint, offset, name)
