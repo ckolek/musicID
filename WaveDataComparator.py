@@ -356,7 +356,10 @@ class WaveDataComparator:
         try:
             f = open('tmp/lsh/'+str(key)+".txt", 'r') # Open file in read mode
             readFile = f.read()
-            listOfFingerprints = readFile.splitlines()
+            listOfStrings = readFile.splitlines()
+            listOfFingerprints = []
+            for x in listOfStrings:
+                listOfFingerprints.append(parse_fprint_string(x))
             return listOfFingerprints
         except (OSError, IOError) as e:
             return  # File not found
