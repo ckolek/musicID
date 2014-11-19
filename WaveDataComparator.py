@@ -58,13 +58,13 @@ WEIGHTS = [-2, 5, -1, 2, -4, -3, 3, 1, -5, 2]
 # Limit the number of fingerprint kept in memory
 LSH_LIMIT = 2250000
 # Each fingerprint is 80 bytes long, with average length songs (~3mins) at
-# 2.5s segments that'd fingerprints would be 5760 bytes per song. At a 200MB
-# memory limit, we could concievably keep the fingerprints for 34,700 songs in
+# 2.5s segments fingerprints would be 5760 bytes per song. With a 200MB
+# memory limit, we could conceivably keep the fingerprints for 34,700 songs in
 # memory, which would be 2,498,400 fingerprints (at 2.5 segment lengths).
 # To be conservative and account for other things we might be keeping in memory,
 # the LSH_LIMIT value has been set to 2.25 million.
 
-
+# Keeps track of what we've written to disk
 writtenToDisk = []
 
 class WaveDataComparator:
@@ -309,7 +309,7 @@ class WaveDataComparator:
             else:
                 stream.write(str(fingerprint)+"\n")
 
-        # Add hashkey to LOthings We've Written
+        # Add hashkey to list of things we've written
         writtenToDisk.append(key)
         stream.close()
 

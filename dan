@@ -37,7 +37,8 @@ class dan:
     # clean up temporary directory
     def tearDown(self):
         subprocess.call(['rm', '-r', '/tmp/musicId'])
-        subprocess.call(['rm', '-r', '/tmp/lsh'])
+        if os.path.exists('/tmp/lsh'):
+            subprocess.call(['rm', '-r', '/tmp/lsh'])
 
 
 # Check if the command line argument(s) are acceptable
@@ -198,24 +199,69 @@ def read_wave_data(file_name):
         if file_info.find('WAVE') < 0:
             print "ERROR: " + file_name + " is not a supported format\n"
             sys.exit(2)
+
+        new_file_name = '/tmp/musicId/' + os.path.basename(file_name)
+        new_file_name_wav = new_file_name[:-4] + '.wav'
+
+        new_file_name_mp3_t = new_file_name + '_t'
+        new_file_name_mp3_t = new_file_name_mp3_t[:-4] + '.mp3' #Temp
+
+        new_file_name_mp3 = new_file_name[:-4] + '.mp3'
+
+        devnull = open('/dev/null', 'w')
+
+        # Convert WAV to mp3 in order to downsample
+        subprocess.check_call(['/course/cs4500f14/bin/lame',
+                               '-V3',
+                               file_name,
+                               new_file_name_mp3_t],
+                              stdout=devnull,
+                              stderr=devnull)
+
+        # Downsample the mp3
+        subprocess.check_call(['/course/cs4500f14/bin/lame',
+                               '-b 96 --resample 22.50',
+                               new_file_name_mp3_t,
+                               new_file_name_mp3],
+                              stdout=devnull,
+                              stderr=devnull)
+
+        # Convert back to WAV
+        subprocess.check_call(['/course/cs4500f14/bin/lame',
+                               '--decode',
+                               new_file_name_mp3,
+                               new_file_name_wav],
+                              stdout=devnull,
+                              stderr=devnull)
+
     elif extension == "mp3":
         if file_info.find('MPEG') < 0 or file_info.find('layer III') < 0:
             print "ERROR: " + file_name + " is not a supported format\n"
             sys.exit(2)
 
         new_file_name = '/tmp/musicId/' + os.path.basename(file_name)
-        new_file_name = new_file_name[:-4] + '.wav'
+        new_file_name_wav = new_file_name[:-4] + '.wav'
+        new_file_name_mp3 = new_file_name[:-4] + '.mp3' # Downsampled
         
         devnull = open('/dev/null', 'w')
 
+        # Downsample the mp3
         subprocess.check_call(['/course/cs4500f14/bin/lame',
-                               '--decode',
+                               '-b 96 --resample 22.50',
                                file_name,
-                               new_file_name],
+                               new_file_name_mp3],
                               stdout=devnull,
                               stderr=devnull)
 
-        file_name = new_file_name
+        # Convert to WAV
+        subprocess.check_call(['/course/cs4500f14/bin/lame',
+                               '--decode',
+                               new_file_name_mp3,
+                               new_file_name_wav],
+                              stdout=devnull,
+                              stderr=devnull)
+
+        file_name = new_file_name_wav
 
     with WaveDataReader.open(file_name) as reader:
         return reader.read()
