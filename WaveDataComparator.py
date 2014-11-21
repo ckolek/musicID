@@ -233,9 +233,9 @@ class WaveDataComparator:
         # assume that any band strengths that are less than 1/10th
         # are too small to be considered for comparison
         for i in range(5):
-            if fp1v[i] <= a1:
+            if fp1v[i] <= a1/10:
                 fp1v[i] = 1
-            if fp2v[i] <= a2:
+            if fp2v[i] <= a2/10:
                 fp2v[i] = 1
 
 
