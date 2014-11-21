@@ -28,6 +28,21 @@ def unpack_from(data, offset, is_unsigned, signed_format, unsigned_format,
         offset)[0]
 
 
+def to_byte(data, offset=0, is_unsigned=False, is_little_endian=True):
+    """
+    Extracts a byter from an array of bytes.
+
+    :param data: the array of bytes to extract the value from
+    :param offset: the offset (in bytes) from the start of the array
+    :param is_unsigned: True if the extracted value should be unsigned, False
+     otherwise
+    :param is_little_endian: True if the value is encoded in little-endian
+     format, False otherwise
+    :return: the extracted byte value
+    """
+
+    return unpack_from(data, offset, is_unsigned, 'b', 'B', is_little_endian)
+
 def to_short(data, offset=0, is_unsigned=False, is_little_endian=True):
     """
     Extracts a short (16-bit) integer from an array of bytes.
