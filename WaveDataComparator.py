@@ -88,7 +88,7 @@ NORM_CONS = 5000.0
 
 # constant used to determine how many nearby 'neighbors'
 # to search in our LSH tables
-LSH_SPAN = 15
+LSH_SPAN = 25
 
 # the sequence of numbers used in computing LSH values for fingerprints
 WEIGHTS = [-2, 5, -1, 2, -4, -3, 3, 1, -5, 2]
@@ -220,11 +220,30 @@ class WaveDataComparator:
         # value, will turn false if anything is found to be inconsistent
         val = True
 
+        # extract fingerprint values from fingerprint class
+        fp1v = fp1.values
+        fp2v = fp2.values
+
+        # fingerprints may contain frequency band strengths that
+        # are miniscule compared to all others. If this is the case
+        # simply set them to 1 for the comparison
+        a1 = sum(fp1v[0:5])/5
+        a2 = sum(fp2v[0:5])/5
+
+        # assume that any band strengths that are less than 1/10th
+        # are too small to be considered for comparison
+        for i in range(5):
+            if fp1v[i] <= a1/10:
+                fp1v[i] = 1
+            if fp2v[i] <= a2/10:
+                fp2v[i] = 1
+
+
         # check to see our amplitudes of frequency bands
         # are of similar value
         for i in range(5):
-            bv1 = fp1.values[i]
-            bv2 = fp2.values[i]
+            bv1 = fp1v[i]
+            bv2 = fp2v[i]
 
             # if band power values are zero, simply change them to number
             # very close to 0 for division purposes
@@ -238,8 +257,8 @@ class WaveDataComparator:
         # next, see if frequencies in the fingerprints are similar
         for i in range(6,10):
 
-            fv1 = fp1.values[i]
-            fv2 = fp2.values[i]
+            fv1 = fp1v[i]
+            fv2 = fp2v[i]
 
             # if frequencies are zero, simply change them to number very close
             # to 0 for division purposes
