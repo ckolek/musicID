@@ -2,8 +2,8 @@ __author__ = 'Deniz'
 
 from util import utilities
 
-# samples to extract into a given segment
-SAMPLES_PER_SEGMENT = 8192
+# duration of each segment of samples (in seconds)
+SEGMENT_DURATION = 0.2
 
 # Segment the data in the given wav file
 def segment_data(wave):
@@ -11,74 +11,39 @@ def segment_data(wave):
 
     chunk = wave.chunk("data")
 
-    samples = get_samples(wave, format, chunk)
+    samples_per_segment = int(SEGMENT_DURATION * format.byte_rate /
+                              format.bytes_per_sample)
 
-    segment_interval = get_segment_interval(wave, format, chunk)
+    num_samples = chunk.length() / format.block_align
 
-    '''SAMPLES_PER_SEGMENT = int(segment_interval * format.byte_rate /
-                              format.bytes_per_sample)'''
+    if format.bytes_per_sample == 1:
+        convert = utilities.to_byte
+    elif format.bytes_per_sample == 2:
+        convert = utilities.to_short
+    else:
+        convert = utilities.to_long
 
-    num_segments = int(len(samples) / SAMPLES_PER_SEGMENT)
+    is_unsigned = format.bytes_per_sample < 2
+
+    time_step = float(samples_per_segment)/format.sample_rate
 
     segments = []
-
-    tstep = float(SAMPLES_PER_SEGMENT)/format.sample_rate
-
-    for i in xrange(num_segments):
-        start = i * SAMPLES_PER_SEGMENT
-        end = start + SAMPLES_PER_SEGMENT
-
-        if end > len(samples):
-            end = len(samples)
-            start = end - SAMPLES_PER_SEGMENT
-
-        segments.append((samples[start:end], i*tstep))
-
-    return segments
-
-# Compute the segmentation interval
-def get_segment_interval(wave, format, chunk):
-        # The file length in seconds
-        fileLength = format.get_time(chunk)
-
-        # The threshold for how small we want each segment to be (seconds)
-        thresh = 5.0
-
-        # The power of two we will start with (2 ** powerOfTwo)
-        powerOfTwo = 4;
-
-        # The segment interval to be computed/returned
-        segmentInterval = 0.0;
-
-        # Start with computing the segment interval based on 16 segments
-        segmentInterval = fileLength / (2 ** powerOfTwo)
-
-        # If the resulting segment is larger than our threshold, compute again
-        #  with a bigger power of 2 until the segment interval is small enough
-        while (segmentInterval > thresh):
-            powerOfTwo += 1
-            segmentInterval = fileLength / (2 ** powerOfTwo)
-
-        return segmentInterval
-
-
-# Get the samples of the wav file to be segmented
-def get_samples(wave, format, chunk):
-    num_samples = chunk.length() / format.block_align
-    divisor = float(2 ** (8 * format.bytes_per_sample) - 1)
-
-    samples = []
+    segment = []
 
     for i in xrange(num_samples):
         sample = 0
 
         for j in xrange(format.num_channels):
-            sample += utilities.to_integer(chunk.data,
-                                           format.bytes_per_sample,
-                                           (i * format.block_align) +
-                                           (j * format.bytes_per_sample),
-                                           (format.bytes_per_sample < 2),
-                                           wave.is_little_endian)
-        samples.append(sample / (format.num_channels * divisor))
+            sample += convert(chunk.data,
+                              (i * format.block_align) +
+                              (j * format.bytes_per_sample),
+                              is_unsigned,
+                              wave.is_little_endian)
 
-    return samples
+        segment.append(sample / format.num_channels)
+
+        if (len(segment) >= samples_per_segment):
+            segments.append((segment, len(segments) * time_step))
+            segment = []
+
+    return segments
