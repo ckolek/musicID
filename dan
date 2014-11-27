@@ -175,6 +175,24 @@ def read_wave_data(file_name):
         if file_info.find('WAVE') < 0:
             print "ERROR: " + file_name + " is not a supported format\n"
             sys.exit(2)
+    elif extension == 'ogg':
+        if file_info.find('Ogg') < 0:
+            print "ERROR: " + file_name + " is not a supported format\n"
+            sys.exit(2)
+        new_file_name = '/tmp/musicId/' + os.path.basename(file_name)
+        new_file_name = new_file_name[:-4] + '.ogg'
+        devnull = open('/dev/null', 'w')
+
+        subprocess.check_call(['/usr/bin/oggdec',
+                                       '--quiet',
+                                       '--output',
+                                       new_file_name,
+                                       file_name],
+                                      stdout=devnull,
+                                      stderr=devnull)
+
+        file_name = new_file_name
+
     elif extension == "mp3":
         if file_info.find('MPEG') < 0 or file_info.find('layer III') < 0:
             print "ERROR: " + file_name + " is not a supported format\n"
