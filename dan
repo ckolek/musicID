@@ -180,7 +180,7 @@ def read_wave_data(file_name):
             print "ERROR: " + file_name + " is not a supported format\n"
             sys.exit(2)
         new_file_name = '/tmp/musicId/' + os.path.basename(file_name)
-        new_file_name = new_file_name[:-4] + '.ogg'
+        new_file_name = new_file_name[:-4] + '.wav'
         devnull = open('/dev/null', 'w')
 
         subprocess.check_call(['/usr/bin/oggdec',
