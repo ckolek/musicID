@@ -180,9 +180,10 @@ def read_wave_data(file_name):
             print "ERROR: " + file_name + " is not a supported format\n"
             sys.exit(2)
         new_file_name = '/tmp/musicId/' + os.path.basename(file_name)
-        new_file_name = new_file_name[:-4] + '.wav'
+        new_file_name = new_file_name[:-4] + '.mp3'
         devnull = open('/dev/null', 'w')
 
+        # Convert to wav with oggdec, output to MP3 (so lame can output to wav)
         subprocess.check_call(['/usr/bin/oggdec',
                                        '--quiet',
                                        '--output',
@@ -192,6 +193,16 @@ def read_wave_data(file_name):
                                       stderr=devnull)
 
         file_name = new_file_name
+        # Switch to wav
+        new_file_name = new_file_name[:-4] + '.wav'
+
+        # Reduce filesize with lame, output to WAV
+        subprocess.check_call(['/course/cs4500f14/bin/lame',
+                               '-q', '--preset', '192', '-ms', '-h',
+                               file_name,
+                               new_file_name],
+                              stdout=devnull,
+                              stderr=devnull)
 
     elif extension == "mp3":
         if file_info.find('MPEG') < 0 or file_info.find('layer III') < 0:
