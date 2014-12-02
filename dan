@@ -11,6 +11,8 @@ from util.exceptions import InvalidFormatError
 from os import listdir
 from os.path import isfile, join
 
+TMP_DIR = '/tmp/cs4500f14musicId/'
+
 """
 Main class that runs all of the components of the dan audio matching program.
 """
@@ -33,14 +35,15 @@ class dan:
 
     # set up temporary directory
     def setUp(self):
-        if os.path.exists('/tmp/musicId'):
-            subprocess.check_call(['rm', '-r', '/tmp/musicId'])
+        if os.path.exists(TMP_DIR):
+            subprocess.call(['rm', '-rf', TMP_DIR])
 
-        os.mkdir('/tmp/musicId')
+        os.mkdir(TMP_DIR)
 
     # clean up temporary directory
     def tearDown(self):
-        subprocess.call(['rm', '-r', '/tmp/musicId'])
+        if os.path.exists(TMP_DIR):
+            subprocess.call(['rm', '-r', TMP_DIR])
 
     # Check if the command line argument(s) are acceptable
     def checkInput(self):
@@ -179,7 +182,7 @@ def read_wave_data(file_name):
         if file_info.find('Ogg') < 0:
             print "ERROR: " + file_name + " is not a supported format\n"
             sys.exit(2)
-        new_file_name = '/tmp/musicId/' + os.path.basename(file_name)
+        new_file_name = TMP_DIR + os.path.basename(file_name)
         new_file_name = new_file_name[:-4] + '.wav'
         devnull = open('/dev/null', 'w')
 
@@ -198,7 +201,7 @@ def read_wave_data(file_name):
             print "ERROR: " + file_name + " is not a supported format\n"
             sys.exit(2)
 
-        new_file_name = '/tmp/musicId/' + os.path.basename(file_name)
+        new_file_name = TMP_DIR + os.path.basename(file_name)
         new_file_name = new_file_name[:-4] + '.wav'
         
         devnull = open('/dev/null', 'w')
