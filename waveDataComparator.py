@@ -1,6 +1,6 @@
 __author__ = 'Mike_Deniz'
 
-import Segmenter
+from segmenter import Segmenter
 import numpy as np
 from numpy.fft import fft, fftfreq
 import matplotlib.mlab as ml
@@ -99,7 +99,12 @@ class WaveDataComparator:
             self.fingerprints.append(dict())
             self.lshs.append(dict())
 
+        self.debug = False
+
     def register_sound(self, file_name, wave, bank_index):
+        if self.debug:
+            print "registering sound: %s [bank: %d]" % (file_name, bank_index)
+
         # create fingerprint for the sound
         fingerprints = self.makeFingerprints(file_name, wave)
 
@@ -258,7 +263,10 @@ class WaveDataComparator:
     # this function returns a list of fingerprints for a given file
     def makeFingerprints(self, file_name, wave):
         # Get a list of segments to be fingerprinted
-        segList = Segmenter.segment_data(wave)
+        segmenter = Segmenter()
+        segmenter.debug = self.debug
+
+        segList = segmenter.segment_data(wave)
 
         # array where fingerprints will be stored
         fprints = []

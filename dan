@@ -6,7 +6,7 @@ import sys, getopt, os, subprocess, io
 from sys import argv
 from wave.waveData import WaveData
 from wave.waveDataReader import WaveDataReader
-from WaveDataComparator import WaveDataComparator
+from waveDataComparator import WaveDataComparator
 from util.exceptions import InvalidFormatError
 from os import listdir
 from os.path import isfile, join
@@ -20,6 +20,8 @@ class dan:
     def __init__(self):
         self.set1 = None
         self.set2 = None
+
+        self.debug = False
 
     def run(self):
         self.setUp()
@@ -51,7 +53,7 @@ class dan:
         try:
             # Get everything on the command line after the file name
             # getopt returns the options and arguments as two separate arrays
-            opts, args = getopt.getopt(argv[1:], 'hf:d:', ['help'])
+            opts, args = getopt.getopt(argv[1:], 'hf:d:', ['help', 'debug'])
 
             # If the user does not use the proper syntax, tell them they
             # have entered the wrong input and exit
@@ -131,11 +133,14 @@ class dan:
                     # location does not exist
                     print "ERROR: Directory location does not exist\n"
                     sys.exit(2)
+            elif o in '--debug':
+                self.debug = True
 
     # Read format function. This is called when the first parameter is a directory
     def doComparison(self):
         # construct WaveDataComparator with 2 sound banks
         c = WaveDataComparator(2)
+        c.debug = self.debug
 
         # read all files in set1 and register them in comparator
         for f in self.set1:
