@@ -283,7 +283,8 @@ class WaveDataComparator:
 
             segment_len = len(samples)
 
-            frequencies = list(fftfreq(segment_len, 1.0/DEFAULT_FS))[1:segment_len/2]
+            frequencies = list(fftfreq(segment_len, 1.0 /
+                wave.wave_data_format.sample_rate))
 
             bands = []
             t = 0
