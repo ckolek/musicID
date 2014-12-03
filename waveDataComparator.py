@@ -108,6 +108,9 @@ class WaveDataComparator:
         # create fingerprint for the sound
         fingerprints = self.makeFingerprints(file_name, wave)
 
+        if self.debug:
+            print "\tcreated %d fingerprints" % len(fingerprints)
+
         # associate fingerprint with file name
         self.fingerprints[bank_index][file_name] = fingerprints
         
