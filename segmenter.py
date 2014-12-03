@@ -67,6 +67,6 @@ class Segmenter:
 
                 samples.append(float(sample) / format.num_channels)
 
-            segments.append((samples, samples_per_segment * time_step))
+            segments.append((samples, len(segments) * time_step))
 
         return segments
