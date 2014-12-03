@@ -414,7 +414,8 @@ class WaveDataComparator:
 # A class that holds information about the fingerprint of a segment of
 #  WAVE audio
 class Fingerprint:
-    def __init__(self, file_name, start_time, values, hash_value, frequencies, bands, index):
+    def __init__(self, file_name, start_time, values, hash_value,
+            frequencies, bands, index):
         """
         :param file_name: the name of the file the audio is from
         :param start_time: the offset in time of the segment within the

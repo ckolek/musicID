@@ -31,9 +31,10 @@ class Segmenter:
         num_segments = num_samples / samples_per_segment / downsample_factor
         
         if self.debug:
-            print "\tlength: %d, block_align: %d" % (chunk.length(), format.block_align)
-            print "\tsample_rate: %d, byte_rate: %d, downsample_factor: %d" % (sample_rate, byte_rate, downsample_factor)
-            print "\tsamples_per_segment: %d, num_samples: %d, num_segments: %d" % (samples_per_segment, num_samples, num_segments)
+            print "\tlength: %d, block_align: %d" %\
+                (chunk.length(), format.block_align)
+            print "\tsample_rate: %d, byte_rate: %d, downsample_factor: %d" %\
+                (sample_rate, byte_rate, downsample_factor)
 
         # determine the utility function to use to convert byte arrays to
         #  integer valus
