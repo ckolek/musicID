@@ -196,9 +196,7 @@ class WaveDataComparator:
             _fp1_offset = _fp1.start_time - fp1.start_time
             _fp2_offset = _fp2.start_time - fp2.start_time
 
-            # check if the matching segments constitute at least a 5 second
-            # segment of  audio
-            if _fp1_offset >= 5.0 and _fp2_offset >= 5.0:
+            if _fp1.index - fp1.index > 0:
                 return True
 
             # check if the current fingerprints match

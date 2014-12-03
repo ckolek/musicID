@@ -18,6 +18,7 @@ class Segmenter:
 
         chunk = wave.chunk("data")
 
+        # calculate the factor to downsample by
         downsample_factor = format.sample_rate / TARGET_SAMPLE_RATE
 
         sample_rate = format.sample_rate / downsample_factor
@@ -34,6 +35,8 @@ class Segmenter:
             print "\tsample_rate: %d, byte_rate: %d, downsample_factor: %d" % (sample_rate, byte_rate, downsample_factor)
             print "\tsamples_per_segment: %d, num_samples: %d, num_segments: %d" % (samples_per_segment, num_samples, num_segments)
 
+        # determine the utility function to use to convert byte arrays to
+        #  integer valus
         if format.bytes_per_sample == 1:
             convert = utilities.to_byte
         elif format.bytes_per_sample == 2:
@@ -47,12 +50,14 @@ class Segmenter:
 
         segments = []
 
+        # create the segments
         for i in xrange(num_segments):
             samples = []
 
             for j in xrange(samples_per_segment / downsample_factor):
                 sample = 0
 
+                # create a mono sample
                 for k in xrange(format.num_channels):
                     sample_offset = downsample_factor *\
                             (i * samples_per_segment + j)
