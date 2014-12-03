@@ -1,6 +1,6 @@
 __author__ = 'Mike_Deniz'
 
-import Segmenter
+from segmenter import Segmenter
 import numpy as np
 from numpy.fft import fft, fftfreq
 import matplotlib.mlab as ml
@@ -99,9 +99,17 @@ class WaveDataComparator:
             self.fingerprints.append(dict())
             self.lshs.append(dict())
 
+        self.debug = False
+
     def register_sound(self, file_name, wave, bank_index):
+        if self.debug:
+            print "registering sound: %s [bank: %d]" % (file_name, bank_index)
+
         # create fingerprint for the sound
         fingerprints = self.makeFingerprints(file_name, wave)
+
+        if self.debug:
+            print "\tcreated %d fingerprints" % len(fingerprints)
 
         # associate fingerprint with file name
         self.fingerprints[bank_index][file_name] = fingerprints
@@ -188,9 +196,7 @@ class WaveDataComparator:
             _fp1_offset = _fp1.start_time - fp1.start_time
             _fp2_offset = _fp2.start_time - fp2.start_time
 
-            # check if the matching segments constitute at least a 5 second
-            # segment of  audio
-            if _fp1_offset >= 5.0 and _fp2_offset >= 5.0:
+            if _fp1.index - fp1.index > 0:
                 return True
 
             # check if the current fingerprints match
@@ -258,7 +264,10 @@ class WaveDataComparator:
     # this function returns a list of fingerprints for a given file
     def makeFingerprints(self, file_name, wave):
         # Get a list of segments to be fingerprinted
-        segList = Segmenter.segment_data(wave)
+        segmenter = Segmenter()
+        segmenter.debug = self.debug
+
+        segList = segmenter.segment_data(wave)
 
         # array where fingerprints will be stored
         fprints = []
@@ -272,7 +281,8 @@ class WaveDataComparator:
 
             segment_len = len(samples)
 
-            frequencies = list(fftfreq(segment_len, 1.0/DEFAULT_FS))[1:segment_len/2]
+            frequencies = list(fftfreq(segment_len, 1.0 /
+                wave.wave_data_format.sample_rate))
 
             bands = []
             t = 0
@@ -404,7 +414,8 @@ class WaveDataComparator:
 # A class that holds information about the fingerprint of a segment of
 #  WAVE audio
 class Fingerprint:
-    def __init__(self, file_name, start_time, values, hash_value, frequencies, bands, index):
+    def __init__(self, file_name, start_time, values, hash_value,
+            frequencies, bands, index):
         """
         :param file_name: the name of the file the audio is from
         :param start_time: the offset in time of the segment within the

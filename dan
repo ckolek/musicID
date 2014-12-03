@@ -6,10 +6,12 @@ import sys, getopt, os, subprocess, io
 from sys import argv
 from wave.waveData import WaveData
 from wave.waveDataReader import WaveDataReader
-from WaveDataComparator import WaveDataComparator
+from waveDataComparator import WaveDataComparator
 from util.exceptions import InvalidFormatError
 from os import listdir
 from os.path import isfile, join
+
+TMP_DIR = '/tmp/cs4500f14musicId/'
 
 """
 Main class that runs all of the components of the dan audio matching program.
@@ -18,6 +20,8 @@ class dan:
     def __init__(self):
         self.set1 = None
         self.set2 = None
+
+        self.debug = False
 
     def run(self):
         self.setUp()
@@ -33,14 +37,15 @@ class dan:
 
     # set up temporary directory
     def setUp(self):
-        if os.path.exists('/tmp/musicId'):
-            subprocess.check_call(['rm', '-r', '/tmp/musicId'])
+        if os.path.exists(TMP_DIR):
+            subprocess.call(['rm', '-rf', TMP_DIR])
 
-        os.mkdir('/tmp/musicId')
+        os.mkdir(TMP_DIR)
 
     # clean up temporary directory
     def tearDown(self):
-        subprocess.call(['rm', '-r', '/tmp/musicId'])
+        if os.path.exists(TMP_DIR):
+            subprocess.call(['rm', '-r', TMP_DIR])
 
     # Check if the command line argument(s) are acceptable
     def checkInput(self):
@@ -48,19 +53,19 @@ class dan:
         try:
             # Get everything on the command line after the file name
             # getopt returns the options and arguments as two separate arrays
-            opts, args = getopt.getopt(argv[1:], 'hf:d:', ['help'])
+            opts, args = getopt.getopt(argv[1:], 'hf:d:', ['help', 'debug'])
 
             # If the user does not use the proper syntax, tell them they
             # have entered the wrong input and exit
             if len(opts) < 2:
-                print ("ERROR: Incorrect input. Input two file paths with the -f"
-                       " option front of each file\n")
+                print ("ERROR: Incorrect input. Input two file paths with the"
+                       " -f option front of each file\n")
                 sys.exit(2)
 
             # If no options are provided notify the user
             if not opts:
-                print ('ERROR: No tags provided. Please precede each file name with'
-                       ' the -f tag\n')
+                print ('ERROR: No tags provided. Please precede each file name'
+                       ' with the -f tag\n')
         # If there is an error, print it out and exit
         except getopt.GetoptError as err:
             print str(err)
@@ -68,8 +73,8 @@ class dan:
 
         # Loop through the resulting options and arguments
         for o, a in opts:
-            # If the user asks for help, print out the usage function to tell them
-            # what to do
+            # If the user asks for help, print out the usage function to tell
+            # them what to do
             if o in ('-h', '--help'):
                 usage()
             # If the user passes in a file location
@@ -80,8 +85,8 @@ class dan:
                     # actually a file
                     if os.path.isfile(a):
                         # If the file is equal to the first file passed in
-                        # assign it to set 1. Set1 check is there in case both files
-                        # being compared are the same
+                        # assign it to set 1. Set1 check is there in case both
+                        # files being compared are the same
                         if a == opts[0][1] and self.set1 is None:
                             self.set1 = [a]
                         # Otherwise, assign the argument to the set2 variable
@@ -92,8 +97,8 @@ class dan:
                     else:
                         print "ERROR: File location does not exist\n"
                         sys.exit(2)
-                # Otherwise, tell the user that the file at the location does not
-                # exist
+                # Otherwise, tell the user that the file at the location does
+                # not exist
                 else:
                     print "ERROR: File location does not exist\n"
                     sys.exit(2)
@@ -101,11 +106,11 @@ class dan:
             elif o in '-d':
                 # If the directory location is valid
                 if os.path.exists(a):
-                    # Error checking to ensure that the directory location actually
-                    # has a directory
+                    # Error checking to ensure that the directory location 
+                    # actually has a directory
                     if os.path.isdir(a):
-                        # If the directory is the first directory passed in, assign
-                        # the argument to set1 
+                        # If the directory is the first directory passed in,
+                        # assign the argument to set1 
                         # set1 is None is there in case two files being compared
                         # are the same
                         if a == opts[0][1] and self.set1 is None:
@@ -120,19 +125,23 @@ class dan:
                     # Otherwise, print out an error stating a directory
                     # was not correctly
                     else:
-                        print ('ERROR: Provided a file as input when a directory'
-                               ' was expected ' + a)
+                        print ('ERROR: Provided a file as input when a'
+                               ' directory was expected ' + a)
                         sys.exit(2)
                 else:
                     # Otherwise, tell the user that the directory at the
                     # location does not exist
                     print "ERROR: Directory location does not exist\n"
                     sys.exit(2)
+            elif o in '--debug':
+                self.debug = True
 
-    # Read format function. This is called when the first parameter is a directory
+    # Read format function. This is called when the first parameter is a
+    # directory
     def doComparison(self):
         # construct WaveDataComparator with 2 sound banks
         c = WaveDataComparator(2)
+        c.debug = self.debug
 
         # read all files in set1 and register them in comparator
         for f in self.set1:
@@ -179,8 +188,8 @@ def read_wave_data(file_name):
         if file_info.find('Ogg') < 0:
             print "ERROR: " + file_name + " is not a supported format\n"
             sys.exit(2)
-        new_file_name = '/tmp/musicId/' + os.path.basename(file_name)
-        new_file_name = new_file_name[:-4] + '.mp3'
+        new_file_name = TMP_DIR + os.path.basename(file_name)
+        new_file_name = new_file_name[:-4] + '.wav'
         devnull = open('/dev/null', 'w')
 
         # Convert to wav with oggdec, output to MP3 (so lame can output to wav)
@@ -193,23 +202,12 @@ def read_wave_data(file_name):
                                       stderr=devnull)
 
         file_name = new_file_name
-        # Switch to wav
-        new_file_name = new_file_name[:-4] + '.wav'
-
-        # Reduce filesize with lame, output to WAV
-        subprocess.check_call(['/course/cs4500f14/bin/lame',
-                               '-q', '--preset', '192', '-ms', '-h',
-                               file_name,
-                               new_file_name],
-                              stdout=devnull,
-                              stderr=devnull)
-
     elif extension == "mp3":
         if file_info.find('MPEG') < 0 or file_info.find('layer III') < 0:
             print "ERROR: " + file_name + " is not a supported format\n"
             sys.exit(2)
 
-        new_file_name = '/tmp/musicId/' + os.path.basename(file_name)
+        new_file_name = TMP_DIR + os.path.basename(file_name)
         new_file_name = new_file_name[:-4] + '.wav'
         
         devnull = open('/dev/null', 'w')
